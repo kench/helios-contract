@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "description": "Bootstrap challenge test vectors (see the Bootstrap API page, section 3.2). TEST KEY ONLY: never register this key for a real device.",
+  "algorithm": "ecdsa-p256-sha256",
+  "messageFormat": "helios-bootstrap-v1\\n<challengeId>\\n<nonce base64 as received>\\n<MACs sorted ascending, joined with ','>",
+  "testKey": {
+    "privateKeyPkcs8Pem": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDwQcJZZuuHCnqoym\nfevuaScku6Q8SKTn8NLF6jiLY9GhRANCAAS0LO4cghAcrr5PsJEbZsUJ3lJMUWM7\nCC9ReilBvaXzsehNeBJ+JvSP135dF6sYoKV3ro2sDtKNotVTPYoQGt7L\n-----END PRIVATE KEY-----\n",
+    "publicKeySpkiPem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtCzuHIIQHK6+T7CRG2bFCd5STFFj\nOwgvUXopQb2l87HoTXgSfib0j9d+XRerGKCld66NrA7SjaLVUz2KEBreyw==\n-----END PUBLIC KEY-----\n",
+    "publicKeyFingerprint": "0c7c95077b7735bf2eb2e17f235316139e794d59c276bd1fcabf3bdd90f4b993"
+  },
+  "challenge": {
+    "challengeId": "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E",
+    "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+    "alg": "ecdsa-p256-sha256"
+  },
+  "request": {
+    "adapters": [
+      {
+        "interfaceName": "eth0",
+        "kind": "ethernet",
+        "mac": "dc:a6:32:00:00:09"
+      },
+      {
+        "interfaceName": "wlan0",
+        "kind": "wifi",
+        "mac": "2c:cf:67:00:00:02"
+      }
+    ]
+  },
+  "signature": {
+    "derBase64": "MEQCIANqH/4VtzSDZRXEo2On0eYdxMTmAPyvy56nt7P+5bb0AiBmHcvUhBY8F4VMHeUARq+7j3pXW6Ts7BvegBZlVIGYyw==",
+    "rawRsHex": "036a1ffe15b734836515c4a363a7d1e61dc4c4e600fcafcb9ea7b7b3fee5b6f4661dcbd484163c17854c1de50046afbb8f7a575ba4ecec1bde801665548198cb"
+  },
+  "cases": [
+    {
+      "id": "valid",
+      "description": "Message built from the original request. Must verify.",
+      "macs": [
+        "dc:a6:32:00:00:09",
+        "2c:cf:67:00:00:02"
+      ],
+      "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
+      "messageSha256Hex": "584d10a7aff457a9a7ebe12236fcce0f04d33dde60fede2958b28883276650a9",
+      "signatureVerifies": true
+    },
+    {
+      "id": "different-macs",
+      "description": "A different MAC set (one MAC changed). Must not verify.",
+      "macs": [
+        "dc:a6:32:00:00:09",
+        "2c:cf:67:00:00:03"
+      ],
+      "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:03,dc:a6:32:00:00:09",
+      "messageSha256Hex": "e723e773b389e92a93e0b404060963c10073e96af3761da1c73319915d308a73",
+      "signatureVerifies": false
+    },
+    {
+      "id": "different-nonce",
+      "description": "A different nonce. Must not verify.",
+      "macs": [
+        "dc:a6:32:00:00:09",
+        "2c:cf:67:00:00:02"
+      ],
+      "nonce": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
+      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
+      "messageSha256Hex": "1c6de8677fd6fe5e59543595d9eb5630867a2c1a45fe581a219423fef1d0a3a3",
+      "signatureVerifies": false
+    }
+  ]
+}

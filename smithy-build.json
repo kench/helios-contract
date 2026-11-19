@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "sources": ["model"],
+  "maven": {
+    "dependencies": [
+      "software.amazon.smithy:smithy-aws-traits:1.70.0",
+      "software.amazon.smithy:smithy-protocol-test-traits:1.70.0",
+      "software.amazon.smithy:smithy-validation-model:1.70.0",
+      "software.amazon.smithy:smithy-openapi:1.70.0"
+    ]
+  },
+  "projections": {
+    "device-api": {
+      "plugins": {
+        "openapi": {
+          "service": "tv.kenley.helios.contract#HeliosBootstrap",
+          "protocol": "aws.protocols#restJson1",
+          "version": "3.1.0"
+        }
+      }
+    },
+    "admin-api": {
+      "plugins": {
+        "openapi": {
+          "service": "tv.kenley.helios.contract#HeliosBootstrapAdmin",
+          "protocol": "aws.protocols#restJson1",
+          "version": "3.1.0"
+        }
+      }
+    }
+  }
+}
