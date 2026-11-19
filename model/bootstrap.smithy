@@ -30,14 +30,14 @@ service HeliosBootstrap {
 
 /// First request at every Helios start. Returns the device identity, or a
 /// challenge if the device record requires one.
-@http(method: "POST", uri: "/v1/bootstrap", code: 200)
+@http(method: "POST", uri: "/v1/device/bootstrap", code: 200)
 @httpRequestTests([
     {
         id: "BootstrapRequestWithChallengeCapability"
         documentation: "A relay with Ethernet and Wi-Fi that can answer challenges."
         protocol: restJson1
         method: "POST"
-        uri: "/v1/bootstrap"
+        uri: "/v1/device/bootstrap"
         headers: {
             "Content-Type": "application/json"
         }
@@ -67,7 +67,7 @@ service HeliosBootstrap {
         documentation: "A scanner with one built-in Ethernet adapter and no challenge key."
         protocol: restJson1
         method: "POST"
-        uri: "/v1/bootstrap"
+        uri: "/v1/device/bootstrap"
         headers: {
             "Content-Type": "application/json"
         }
@@ -98,8 +98,8 @@ service HeliosBootstrap {
         body: """
             {
                 "identity": {
-                    "deviceId": "dev_01JD5VZ6R1H8P3S0W2Y4A6C8E0",
-                    "thingName": "helios-backpack-01",
+                    "deviceId": "d-01JD5VZ6R1H8P3S0W2Y4A6C8E0",
+                    "thingName": "t-01JD5VY2K7M9Q4R6T8V0X2Z4B6",
                     "pin": "123456",
                     "token": {
                         "tokenLabel": "helios",
@@ -118,8 +118,8 @@ service HeliosBootstrap {
         params: {
             result: {
                 identity: {
-                    deviceId: "dev_01JD5VZ6R1H8P3S0W2Y4A6C8E0"
-                    thingName: "helios-backpack-01"
+                    deviceId: "d-01JD5VZ6R1H8P3S0W2Y4A6C8E0"
+                    thingName: "t-01JD5VY2K7M9Q4R6T8V0X2Z4B6"
                     pin: "123456"
                     token: {
                         tokenLabel: "helios"
@@ -146,7 +146,7 @@ service HeliosBootstrap {
         body: """
             {
                 "challenge": {
-                    "challengeId": "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E",
+                    "challengeId": "c-01JD5W3Q8T6M2K4X9B0N7C1D2E",
                     "nonce": "dGVzdC1ub25jZS0wMTIzNDU2Nzg5YWJjZGVmMDEyMzQ=",
                     "alg": "ecdsa-p256-sha256",
                     "expiresAt": "2026-11-19T05:31:00Z"
@@ -156,7 +156,7 @@ service HeliosBootstrap {
         params: {
             result: {
                 challenge: {
-                    challengeId: "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E"
+                    challengeId: "c-01JD5W3Q8T6M2K4X9B0N7C1D2E"
                     nonce: "test-nonce-0123456789abcdef01234"
                     alg: "ecdsa-p256-sha256"
                     expiresAt: 1795066260
@@ -202,19 +202,19 @@ operation Bootstrap {
 /// received) + "\n" + the request's MACs sorted ascending and joined with ",".
 /// It is hashed with SHA-256 and signed with ECDSA P-256. See the challenge
 /// test vectors in test-vectors/.
-@http(method: "POST", uri: "/v1/bootstrap/challenge", code: 200)
+@http(method: "POST", uri: "/v1/device/bootstrap/challenge", code: 200)
 @httpRequestTests([
     {
         id: "AnswerChallengeRequest"
         protocol: restJson1
         method: "POST"
-        uri: "/v1/bootstrap/challenge"
+        uri: "/v1/device/bootstrap/challenge"
         headers: {
             "Content-Type": "application/json"
         }
         body: """
             {
-                "challengeId": "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E",
+                "challengeId": "c-01JD5W3Q8T6M2K4X9B0N7C1D2E",
                 "signature": "dGVzdC1zaWduYXR1cmU=",
                 "adapters": [
                     {"interfaceName": "eth0", "kind": "ethernet", "mac": "2c:cf:67:00:00:01"}
@@ -222,7 +222,7 @@ operation Bootstrap {
             }"""
         bodyMediaType: "application/json"
         params: {
-            challengeId: "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E"
+            challengeId: "c-01JD5W3Q8T6M2K4X9B0N7C1D2E"
             signature: "test-signature"
             adapters: [
                 { interfaceName: "eth0", kind: "ethernet", mac: "2c:cf:67:00:00:01" }
@@ -281,6 +281,8 @@ structure Challenge {
     expiresAt: DateTime
 }
 
+/// deviceId identifies the Device resource managed through the admin API.
+@references([{ resource: Device }])
 structure DeviceIdentity {
     @required
     deviceId: DeviceId
@@ -297,8 +299,8 @@ structure DeviceIdentity {
     aws: AwsSettings
 }
 
-/// "chl_" followed by a ULID.
-@pattern("^chl_[0-9A-HJKMNP-TV-Z]{26}$")
+/// Service-generated challenge ID: "c-" followed by a ULID.
+@pattern("^c-[0-9A-HJKMNP-TV-Z]{26}$")
 string ChallengeId
 
 /// 32 random bytes.

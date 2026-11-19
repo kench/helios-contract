@@ -14,12 +14,16 @@ string MacAddress
 string InterfaceName
 
 /// AWS IoT thing name. Also used as the MQTT client ID.
+///
+/// Any valid AWS IoT thing name is accepted. The strongly recommended format is
+/// "t-" followed by a ULID (for example "t-01JD5VY2K7M9Q4R6T8V0X2Z4B6"),
+/// matching device and challenge IDs. It is not enforced.
 @length(min: 1, max: 128)
 @pattern("^[a-zA-Z0-9:_-]+$")
 string ThingName
 
-/// Service-generated device ID: "dev_" followed by a ULID.
-@pattern("^dev_[0-9A-HJKMNP-TV-Z]{26}$")
+/// Service-generated device ID: "d-" followed by a ULID.
+@pattern("^d-[0-9A-HJKMNP-TV-Z]{26}$")
 string DeviceId
 
 /// PKCS#11 token or object label (at most 32 bytes).

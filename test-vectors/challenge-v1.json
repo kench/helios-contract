@@ -4,12 +4,12 @@
   "algorithm": "ecdsa-p256-sha256",
   "messageFormat": "helios-bootstrap-v1\\n<challengeId>\\n<nonce base64 as received>\\n<MACs sorted ascending, joined with ','>",
   "testKey": {
-    "privateKeyPkcs8Pem": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgDwQcJZZuuHCnqoym\nfevuaScku6Q8SKTn8NLF6jiLY9GhRANCAAS0LO4cghAcrr5PsJEbZsUJ3lJMUWM7\nCC9ReilBvaXzsehNeBJ+JvSP135dF6sYoKV3ro2sDtKNotVTPYoQGt7L\n-----END PRIVATE KEY-----\n",
-    "publicKeySpkiPem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtCzuHIIQHK6+T7CRG2bFCd5STFFj\nOwgvUXopQb2l87HoTXgSfib0j9d+XRerGKCld66NrA7SjaLVUz2KEBreyw==\n-----END PUBLIC KEY-----\n",
-    "publicKeyFingerprint": "0c7c95077b7735bf2eb2e17f235316139e794d59c276bd1fcabf3bdd90f4b993"
+    "privateKeyPkcs8Pem": "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgzmb8WqWvmBmrLv85\nnsdvrUvL6IYV7nlGRe8NOqy2t/uhRANCAAQ10/b59t/zLdBH1gdoGLoiyq+MwAGV\ntWMAPHNB1537Y3gEzODInP3PHrd8/n09+4/A+NH1OV9FteSh1ad+Y9Fj\n-----END PRIVATE KEY-----\n",
+    "publicKeySpkiPem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAENdP2+fbf8y3QR9YHaBi6IsqvjMAB\nlbVjADxzQded+2N4BMzgyJz9zx63fP59PfuPwPjR9TlfRbXkodWnfmPRYw==\n-----END PUBLIC KEY-----\n",
+    "publicKeyFingerprint": "073ab15dc70fb8a31b70f972294253b7922b4e5fbd8caa296ef7f6245a8c2e67"
   },
   "challenge": {
-    "challengeId": "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E",
+    "challengeId": "c-01JD5W3Q8T6M2K4X9B0N7C1D2E",
     "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
     "alg": "ecdsa-p256-sha256"
   },
@@ -28,8 +28,8 @@
     ]
   },
   "signature": {
-    "derBase64": "MEQCIANqH/4VtzSDZRXEo2On0eYdxMTmAPyvy56nt7P+5bb0AiBmHcvUhBY8F4VMHeUARq+7j3pXW6Ts7BvegBZlVIGYyw==",
-    "rawRsHex": "036a1ffe15b734836515c4a363a7d1e61dc4c4e600fcafcb9ea7b7b3fee5b6f4661dcbd484163c17854c1de50046afbb8f7a575ba4ecec1bde801665548198cb"
+    "derBase64": "MEQCIB2koQlqfPO51LVxPCtSmra9VGyAKUMM/iZsp66PzGwwAiBr5oCTGKLjTSPoJmHb1/ywqOuNSkQSlV37iybdx4y9Lw==",
+    "rawRsHex": "1da4a1096a7cf3b9d4b5713c2b529ab6bd546c8029430cfe266ca7ae8fcc6c306be6809318a2e34d23e82661dbd7fcb0a8eb8d4a4412955dfb8b26ddc78cbd2f"
   },
   "cases": [
     {
@@ -40,8 +40,8 @@
         "2c:cf:67:00:00:02"
       ],
       "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
-      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
-      "messageSha256Hex": "584d10a7aff457a9a7ebe12236fcce0f04d33dde60fede2958b28883276650a9",
+      "message": "helios-bootstrap-v1\nc-01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
+      "messageSha256Hex": "1400ba1a540b300f05beb253f186d6ed5af0e2fc84f6b3f70fbbc4ae61d6affd",
       "signatureVerifies": true
     },
     {
@@ -52,8 +52,8 @@
         "2c:cf:67:00:00:03"
       ],
       "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
-      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:03,dc:a6:32:00:00:09",
-      "messageSha256Hex": "e723e773b389e92a93e0b404060963c10073e96af3761da1c73319915d308a73",
+      "message": "helios-bootstrap-v1\nc-01JD5W3Q8T6M2K4X9B0N7C1D2E\nAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=\n2c:cf:67:00:00:03,dc:a6:32:00:00:09",
+      "messageSha256Hex": "72de3ca265123c823af6971bcf87e5165ef6cee591d1eb98f13d2f1dc95ad17f",
       "signatureVerifies": false
     },
     {
@@ -64,8 +64,8 @@
         "2c:cf:67:00:00:02"
       ],
       "nonce": "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=",
-      "message": "helios-bootstrap-v1\nchl_01JD5W3Q8T6M2K4X9B0N7C1D2E\nAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
-      "messageSha256Hex": "1c6de8677fd6fe5e59543595d9eb5630867a2c1a45fe581a219423fef1d0a3a3",
+      "message": "helios-bootstrap-v1\nc-01JD5W3Q8T6M2K4X9B0N7C1D2E\nAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=\n2c:cf:67:00:00:02,dc:a6:32:00:00:09",
+      "messageSha256Hex": "2db891dd2ecc8ae4b6dd07d19d8c350be694d59ba9f8abefed613d6aeda4e134",
       "signatureVerifies": false
     }
   ]

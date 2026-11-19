@@ -11,8 +11,8 @@ source of truth for:
 
 Design docs (Notion): *Helios - Bootstrap API* and *Helios - LLD 1*, section 4.8.
 
-> **Status:** first draft. CI runs `smithy build` on every pull request. Fix anything the
-> validators report before the first tagged release.
+> **Status:** draft. CI runs `smithy build` on every pull request, and the model validates
+> with no warnings.
 
 ## Layout
 
@@ -125,7 +125,7 @@ them. They are run by the consumers: `helios-cloud` against its Java implementat
 
 ## To do
 
-- [ ] Fix any validator findings from the first CI run of `smithy build`.
+- [x] Fix any validator findings from the first CI run of `smithy build`.
 - [x] CI: run `smithy build`, check the challenge vectors, and attach the OpenAPI outputs to
       each tagged release.
 - [ ] Add the MQTT message shapes from LLD 2.
