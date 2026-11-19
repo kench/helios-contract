@@ -11,8 +11,8 @@ source of truth for:
 
 Design docs (Notion): *Helios - Bootstrap API* and *Helios - LLD 1*, section 4.8.
 
-> **Status:** first draft. The model hasn't been run through `smithy build` yet. Run it before
-> the first tagged release and fix anything the validators report.
+> **Status:** first draft. CI runs `smithy build` on every pull request. Fix anything the
+> validators report before the first tagged release.
 
 ## Layout
 
@@ -26,6 +26,9 @@ test-vectors/
   challenge-v1.json  challenge message, digest and signature vectors (TEST KEY ONLY)
 scripts/
   generate_challenge_vectors.py   regenerates challenge-v1.json
+  check_challenge_vectors.py      checks the vector files (run in CI)
+  requirements.txt                Python dependencies for both scripts
+.github/workflows/ci.yml          CI and releases
 ```
 
 ## Protocol and wire format
@@ -49,8 +52,12 @@ AWS ones. In practice that means:
 ## Building
 
 ```sh
-smithy build        # needs the Smithy CLI; Maven dependencies come from smithy-build.json
+smithy build        # needs the Smithy CLI (1.75.0); Maven dependencies come from smithy-build.json
+python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `cryptography`
 ```
+
+The Smithy CLI version is pinned in `.github/workflows/ci.yml` (`SMITHY_VERSION`) and must match
+the dependency versions in `smithy-build.json`. Bump them together.
 
 The outputs go to `build/smithy/<projection>/openapi/`:
 
@@ -94,6 +101,21 @@ with no trailing newline. To regenerate (this creates a new key and new signatur
 python3 scripts/generate_challenge_vectors.py > test-vectors/challenge-v1.json
 ```
 
+## CI and releases
+
+`.github/workflows/ci.yml` runs on every pull request, on pushes to `main`, and on version tags:
+
+- **Smithy build:** installs the pinned Smithy CLI (checking its published SHA-256), runs
+  `smithy build`, which fails on any validation error, and uploads the OpenAPI files as the
+  `openapi` artifact.
+- **Challenge test vectors:** runs `check_challenge_vectors.py` on every file in `test-vectors/`.
+- **Release:** pushing a tag `vX.Y.Z` (once both jobs pass) creates a GitHub release with the
+  OpenAPI files and the test vectors attached.
+
+`smithy build` checks that the protocol tests in the model are well-formed, but it doesn't run
+them. They are run by the consumers: `helios-cloud` against its Java implementation, and
+`helios` against its Rust types.
+
 ## Versioning
 
 - The API version is in the path (`/v1`). Within v1, changes may only add things: new optional
@@ -103,8 +125,8 @@ python3 scripts/generate_challenge_vectors.py > test-vectors/challenge-v1.json
 
 ## To do
 
-- [ ] Run `smithy build` and fix validator findings.
-- [ ] CI: run `smithy build`, check the challenge vectors, and attach the OpenAPI outputs to
+- [ ] Fix any validator findings from the first CI run of `smithy build`.
+- [x] CI: run `smithy build`, check the challenge vectors, and attach the OpenAPI outputs to
       each tagged release.
 - [ ] Add the MQTT message shapes from LLD 2.
 
