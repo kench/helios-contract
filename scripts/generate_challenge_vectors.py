@@ -57,7 +57,7 @@ def main() -> None:
         serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    challenge_id = "chl_01JD5W3Q8T6M2K4X9B0N7C1D2E"
+    challenge_id = "c-01JD5W3Q8T6M2K4X9B0N7C1D2E"
     nonce = bytes(range(32))
     nonce_b64 = base64.b64encode(nonce).decode("ascii")
     # Request order (sorted by interface name), deliberately not MAC order, so the
