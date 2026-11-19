@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in step with the Maven dependency versions in smithy-build.json.
+  SMITHY_VERSION: "1.75.0"
+
+jobs:
+  smithy:
+    name: Smithy build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Smithy CLI
+        run: |
+          set -euo pipefail
+          base="https://github.com/smithy-lang/smithy/releases/download/${SMITHY_VERSION}"
+          zip="smithy-cli-linux-x86_64.zip"
+          mkdir -p "$RUNNER_TEMP/smithy-install/smithy"
+          cd "$RUNNER_TEMP/smithy-install"
+          curl -fsSL "$base/$zip" -o "$zip"
+          curl -fsSL "$base/$zip.sha256" -o "$zip.sha256"
+          sha256sum -c "$zip.sha256"
+          unzip -qo "$zip"
+          mv smithy-cli-linux-x86_64/* smithy
+          sudo smithy/install
+          smithy --version
+
+      # Validates the model (including protocol-test traits) and generates
+      # OpenAPI 3.1 for each service. Fails on any validation ERROR.
+      - name: Build model
+        run: smithy build
+
+      - name: Upload OpenAPI
+        uses: actions/upload-artifact@v7
+        with:
+          name: openapi
+          path: build/smithy/*/openapi/*.openapi.json
+          if-no-files-found: error
+
+  test-vectors:
+    name: Challenge test vectors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python -m pip install -r scripts/requirements.txt
+
+      - name: Check vectors
+        run: python scripts/check_challenge_vectors.py test-vectors/*.json
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [smithy, test-vectors]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download OpenAPI
+        uses: actions/download-artifact@v8
+        with:
+          name: openapi
+          path: openapi
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            openapi/*/openapi/*.openapi.json \
+            test-vectors/*.json
