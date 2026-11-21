@@ -72,7 +72,7 @@ hand-written `serde` types against them and against the protocol-test bodies in 
 Both include this repository as a **git submodule pinned to a tagged release**, so a contract
 change reaches each side only when that repository bumps the submodule.
 
-- **helios-cloud** generates Java types from the model (Smithy Java type code generation, Java 21)
+- **helios-cloud** generates Java types from the model (Smithy Java type code generation, Java 25)
   for the bootstrap Lambdas, and can generate a Java client for the admin API (SigV4) for
   provisioning tools. The code generation config lives in helios-cloud, not here.
 - **helios** uses hand-written Rust types for the two device operations, tested against the
