@@ -28,8 +28,10 @@ python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `crypto
 - Within `/v1` changes may only add things (optional members, operations, enum values). Anything
   else is a breaking change: `!` in the Conventional Commits title and a new major path version.
 - Conventional Commits for commits and PR titles; squash merges. CI is required on `main`.
-- Releases are tags `vX.Y.Z` on `main`; CI attaches the OpenAPI files and test vectors. Only the
-  owner pushes tags.
+- Releases are tags `vX.Y.Z` on `main`; CI attaches the OpenAPI files and test vectors. The owner
+  pushes tags, or an agent the owner has OK'd for that release: it tags the release PR's merge
+  commit on `origin/main` once CI passed there, pushes only that tag, never moves one, and
+  watches the release.
 - `test-vectors/` use a published test key; never put a real device key in this repository.
 - Control API rules (owner, 2026-11-21): destinations are SRT or SRTLA URLs only; the cloud never
   sends ffmpeg arguments or pipelines; profiles and streams are defined on the device; changes go
