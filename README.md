@@ -58,6 +58,14 @@ AWS ones. In practice that means:
   write the device's `stream` shadow and return 202: the device applies them when it can and
   reports the result in `GetStream` (`pending`, `rejected`). They take an optional
   `clientToken` (`@idempotencyToken`), so a retry is safe.
+- Wi-Fi changes (`SetWifiNetwork`, `DeleteWifiNetwork`) are the exception: they're commands to
+  the device (`net.wifi.set`, `net.wifi.remove`) and return 200 once it answers, because the
+  passphrase is a secret a shadow mustn't hold. The service passes it through without storing
+  or logging it; if the device doesn't answer in time the call fails with `DeviceUnreachable`
+  and nothing is kept. Both are idempotent (a network is identified by its SSID). The SSID goes
+  in the body or the query string, never the path, since it can hold any character.
+  `WifiPassphrase` is `@sensitive`. `ListWifiNetworks` reads the `net` shadow and never returns
+  passphrases.
 - Control API unions (`Source`, `Input`, `BitrateSetting`) are objects with one member, for
   example `{"rtmp": {"key": "ingest"}}`; `{"profileDefault": {}}` clears a bitrate override.
 - `DestinationUrl` is an SRT or SRTLA URL only (`srt://host:port?streamid=…&latency=…&passphrase=…`,

@@ -49,6 +49,9 @@ resource Device {
     operations: [
         ListInputs
         ListProfiles
+        ListWifiNetworks
+        SetWifiNetwork
+        DeleteWifiNetwork
     ]
 }
 
@@ -155,6 +158,155 @@ operation ListProfiles {
     errors: [
         DeviceNotFound
         DeviceStateUnavailable
+    ]
+}
+
+// --- Wi-Fi networks -------------------------------------------------------------------------
+
+/// Lists the Wi-Fi networks the device is set to join, as it last reported them (in its `net`
+/// shadow). Passphrases are never reported or returned.
+@readonly
+@http(method: "GET", uri: "/v1/control/devices/{deviceId}/wifi/networks", code: 200)
+operation ListWifiNetworks {
+    input := {
+        @required
+        @httpLabel
+        deviceId: DeviceId
+    }
+
+    output := {
+        @required
+        networks: WifiNetworkList
+
+        /// When the device last reported them.
+        reportedAt: DateTime
+    }
+
+    errors: [
+        DeviceNotFound
+        DeviceStateUnavailable
+    ]
+}
+
+/// Adds a Wi-Fi network for the device to join, or replaces the one with the same SSID. A
+/// command to the device (net.wifi.set), not a shadow change, because the passphrase is a
+/// secret: it's passed through to the device and never stored or logged by the service, and
+/// the device keeps it readable only by root. So the device must be online: if it doesn't
+/// answer in time, the call fails with DeviceUnreachable and nothing is kept. The device saves
+/// the network and applies it to its network configuration (netplan or NetworkManager); its
+/// `net` shadow then shows whether the Wi-Fi adapter joined. HLD 7.3, LLD 3 section 10.
+@idempotent
+@httpRequestTests([
+    {
+        id: "SetAPersonalWifiNetwork"
+        documentation: "The SSID and passphrase are in the body, never the path."
+        protocol: restJson1
+        method: "PUT"
+        uri: "/v1/control/devices/d-01JD5VY2K7M9Q4R6T8V0X2Z4B6/wifi/networks"
+        headers: { "Content-Type": "application/json" }
+        body: """
+            {
+              "ssid": "Venue / Media",
+              "passphrase": "correct horse battery",
+              "hidden": false
+            }
+            """
+        bodyMediaType: "application/json"
+        params: {
+            deviceId: "d-01JD5VY2K7M9Q4R6T8V0X2Z4B6"
+            ssid: "Venue / Media"
+            passphrase: "correct horse battery"
+            hidden: false
+        }
+    }
+    {
+        id: "SetAnOpenWifiNetwork"
+        documentation: "Without a passphrase, the network is open."
+        protocol: restJson1
+        method: "PUT"
+        uri: "/v1/control/devices/d-01JD5VY2K7M9Q4R6T8V0X2Z4B6/wifi/networks"
+        headers: { "Content-Type": "application/json" }
+        body: """
+            {
+              "ssid": "Cafe"
+            }
+            """
+        bodyMediaType: "application/json"
+        params: {
+            deviceId: "d-01JD5VY2K7M9Q4R6T8V0X2Z4B6"
+            ssid: "Cafe"
+        }
+    }
+])
+@http(method: "PUT", uri: "/v1/control/devices/{deviceId}/wifi/networks", code: 200)
+operation SetWifiNetwork {
+    input := {
+        @required
+        @httpLabel
+        deviceId: DeviceId
+
+        @required
+        ssid: WifiSsid
+
+        /// WPA2/WPA3-Personal. Left out for an open network.
+        passphrase: WifiPassphrase
+
+        /// The network doesn't broadcast its SSID, so the device probes for it.
+        hidden: Boolean = false
+    }
+
+    output := {
+        /// The network as the device saved it.
+        @required
+        network: WifiNetwork
+    }
+
+    errors: [
+        DeviceNotFound
+        DeviceUnreachable
+        WifiNetworkRefused
+    ]
+}
+
+/// Removes a Wi-Fi network from the device (a net.wifi.remove command). Removing one the
+/// device doesn't have succeeds. The device must be online, as for SetWifiNetwork.
+@idempotent
+@httpRequestTests([
+    {
+        id: "DeleteAWifiNetworkBySsid"
+        documentation: "The SSID is a query parameter, so any characters work."
+        protocol: restJson1
+        method: "DELETE"
+        uri: "/v1/control/devices/d-01JD5VY2K7M9Q4R6T8V0X2Z4B6/wifi/networks"
+        queryParams: ["ssid=Venue%20%2F%20Media"]
+        params: {
+            deviceId: "d-01JD5VY2K7M9Q4R6T8V0X2Z4B6"
+            ssid: "Venue / Media"
+        }
+    }
+])
+@http(method: "DELETE", uri: "/v1/control/devices/{deviceId}/wifi/networks", code: 200)
+operation DeleteWifiNetwork {
+    input := {
+        @required
+        @httpLabel
+        deviceId: DeviceId
+
+        @required
+        @httpQuery("ssid")
+        ssid: WifiSsid
+    }
+
+    output := {
+        /// Whether the device had the network.
+        @required
+        removed: Boolean
+    }
+
+    errors: [
+        DeviceNotFound
+        DeviceUnreachable
+        WifiNetworkRefused
     ]
 }
 
@@ -836,6 +988,41 @@ string DestinationUrl
 @pattern("^[A-Za-z0-9_-]+$")
 string ClientToken
 
+// --- Shapes: Wi-Fi -------------------------------------------------------------------------
+
+/// A Wi-Fi network's name. At most 32 bytes in UTF-8: the device refuses a longer one.
+@length(min: 1, max: 32)
+string WifiSsid
+
+/// A WPA2/WPA3-Personal passphrase: 8 to 63 printable ASCII characters, or a 64-digit hex
+/// pre-shared key (which can't be used for WPA3).
+@sensitive
+@length(min: 8, max: 64)
+@pattern("^([ -~]{8,63}|[0-9A-Fa-f]{64})$")
+string WifiPassphrase
+
+/// A network the device is set to join. Never includes the passphrase.
+structure WifiNetwork {
+    @required
+    ssid: WifiSsid
+
+    /// open or personal.
+    @required
+    security: WifiSecurity
+
+    @required
+    hidden: Boolean
+}
+
+enum WifiSecurity {
+    OPEN = "open"
+    PERSONAL = "personal"
+}
+
+list WifiNetworkList {
+    member: WifiNetwork
+}
+
 // --- Errors --------------------------------------------------------------------------------
 
 /// The device has no stream with this ID.
@@ -871,6 +1058,17 @@ structure InvalidDestination {
 
     /// The part that's wrong: scheme, host, port, a parameter's name or value.
     part: String
+}
+
+/// The device refused the Wi-Fi change: it has no Wi-Fi adapter, already has the most networks
+/// it keeps (16), or found the SSID or passphrase invalid.
+@error("client")
+@httpError(409)
+structure WifiNetworkRefused {
+    message: String
+
+    /// no_adapter, too_many, invalid_ssid, invalid_passphrase or apply_failed.
+    reason: String
 }
 
 /// The device didn't answer the command in time: it may be offline.
