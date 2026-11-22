@@ -1,8 +1,10 @@
 # AGENTS.md
 
-helios-contract is the Smithy model of the Helios Bootstrap API (`restJson1`): the device
-service `HeliosBootstrap` (no auth: Bootstrap, AnswerChallenge) and the admin service
-`HeliosBootstrapAdmin` (SigV4: RegisterDevice, GetDevice, SetDeviceStatus, DeleteDevice), plus
+helios-contract is the Smithy model of the Helios APIs (`restJson1`): the device service
+`HeliosBootstrap` (no auth: Bootstrap, AnswerChallenge), the admin service
+`HeliosBootstrapAdmin` (SigV4: RegisterDevice, GetDevice, SetDeviceStatus, DeleteDevice...),
+and the control service `HeliosControl` (SigV4, namespace `tv.kenley.helios.control`:
+devices, inputs, profiles and streams for operators and agents; HLD section 7.3), plus
 challenge test vectors. The design is the Notion page "Helios - Bootstrap API"; current status in
 "Helios - Project Status and Handoff". `README.md` has the layout, wire format and release
 process.
@@ -29,3 +31,6 @@ python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `crypto
 - Releases are tags `vX.Y.Z` on `main`; CI attaches the OpenAPI files and test vectors. Only the
   owner pushes tags.
 - `test-vectors/` use a published test key; never put a real device key in this repository.
+- Control API rules (owner, 2026-11-21): destinations are SRT or SRTLA URLs only; the cloud never
+  sends ffmpeg arguments or pipelines; profiles and streams are defined on the device; changes go
+  through the `stream` shadow's desired state.
