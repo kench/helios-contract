@@ -188,13 +188,17 @@ operation ListWifiNetworks {
     ]
 }
 
-/// Adds a Wi-Fi network for the device to join, or replaces the one with the same SSID. A
-/// command to the device (net.wifi.set), not a shadow change, because the passphrase is a
-/// secret: it's passed through to the device and never stored or logged by the service, and
-/// the device keeps it readable only by root. So the device must be online: if it doesn't
-/// answer in time, the call fails with DeviceUnreachable and nothing is kept. The device saves
-/// the network and applies it to its network configuration (netplan or NetworkManager); its
-/// `net` shadow then shows whether the Wi-Fi adapter joined. HLD 7.3, LLD 3 section 10.
+/// Adds a Wi-Fi network for the device to join, or replaces the one with the same SSID. An AWS
+/// IoT command execution (helios-net-wifi-set, Helios's net.wifi.set), not a shadow change,
+/// because the passphrase is a secret a shadow mustn't hold. AWS keeps command executions, so
+/// the service first seals the passphrase to the device's key (HPKE, RFC 9180, to the
+/// `secrets_key` in its `helios` shadow, bound to the device and the SSID): AWS only ever holds
+/// ciphertext, only that device can open it, and the service never stores or logs the
+/// plaintext. The device keeps it readable only by root. The device must be online: if it
+/// doesn't answer in time, the call fails with DeviceUnreachable and nothing is changed. The
+/// device saves the network and applies it to its network configuration (netplan or
+/// NetworkManager); its `net` shadow then shows whether the Wi-Fi adapter joined. HLD 7.3,
+/// LLD 2 section 7.3, LLD 3 section 10.
 @idempotent
 @httpRequestTests([
     {
@@ -268,8 +272,9 @@ operation SetWifiNetwork {
     ]
 }
 
-/// Removes a Wi-Fi network from the device (a net.wifi.remove command). Removing one the
-/// device doesn't have succeeds. The device must be online, as for SetWifiNetwork.
+/// Removes a Wi-Fi network from the device (an AWS IoT command execution, helios-net-wifi-remove,
+/// Helios's net.wifi.remove). Removing one the device doesn't have succeeds. The device must be
+/// online, as for SetWifiNetwork.
 @idempotent
 @httpRequestTests([
     {
@@ -1061,13 +1066,16 @@ structure InvalidDestination {
 }
 
 /// The device refused the Wi-Fi change: it has no Wi-Fi adapter, already has the most networks
-/// it keeps (16), or found the SSID or passphrase invalid.
+/// it keeps (16), found the SSID or passphrase invalid, couldn't open the sealed passphrase, or
+/// can't take it at all (no key to seal to, or a Helios without Wi-Fi commands).
 @error("client")
 @httpError(409)
 structure WifiNetworkRefused {
     message: String
 
-    /// no_adapter, too_many, invalid_ssid, invalid_passphrase or apply_failed.
+    /// no_adapter, too_many, invalid_ssid, invalid_passphrase, secret_unreadable (the device
+    /// couldn't open the sealed passphrase), no_secrets_key (the device reports no key to seal
+    /// it to; nothing was sent), unsupported (its Helios has no Wi-Fi commands) or apply_failed.
     reason: String
 }
 
