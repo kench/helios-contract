@@ -6,13 +6,17 @@ source of truth for:
 
 - the **Bootstrap API**: the device API (`HeliosBootstrap`) and the admin API
   (`HeliosBootstrapAdmin`), modelled in [Smithy](https://smithy.io/),
+- the **Control API** (`HeliosControl`, namespace `tv.kenley.helios.control`): operators and
+  agents see devices and their streams and start, stop and adjust them (HLD section 7.3),
 - the **challenge test vectors**, used by both sides to test the signed bootstrap challenge,
 - later, the MQTT message shapes from the messaging design (LLD 2).
 
-Design docs (Notion): *Helios - Bootstrap API* and *Helios - LLD 1*, section 4.8.
+Design docs (Notion): *Helios - Bootstrap API*, *Helios - LLD 1*, section 4.8, and the HLD,
+section 7.3 (the Control API).
 
-> **Status:** draft. CI runs `smithy build` on every pull request, and the model validates
-> with no warnings.
+> **Status:** draft. CI runs `smithy build` on every pull request; the model validates with no
+> errors. The only warnings are `MemberShouldReferenceResource` on `deviceId` members, which
+> Smithy raises because both the admin and control services have their own `Device` resource.
 
 ## Layout
 
@@ -21,6 +25,7 @@ model/
   common.smithy      shapes shared by both services (MAC, thing name, PIN, errors, ...)
   bootstrap.smithy   device API: Bootstrap, AnswerChallenge, plus protocol tests
   admin.smithy       admin API: the Device resource and its operations
+  control.smithy     control API: devices, their inputs and profiles, and the Stream resource
 smithy-build.json    build config: OpenAPI 3.1 output for each service
 test-vectors/
   challenge-v1.json  challenge message, digest and signature vectors (TEST KEY ONLY)
@@ -45,8 +50,19 @@ AWS ones. In practice that means:
   header (for example `DeviceDisabled`). Several errors share 403, so clients go by the
   error type, not only the status code.
 - Invalid input is rejected with `smithy.framework#ValidationException` (400).
-- The admin API uses SigV4 (`@sigv4(name: "execute-api")`), matching IAM authorization on
-  API Gateway. The device API has no authentication.
+- The admin and control APIs use SigV4 (`@sigv4(name: "execute-api")`), matching IAM
+  authorization on API Gateway (the control API's callers assume `helios-operator`). The device
+  API has no authentication. All three are served by one API Gateway REST API, under
+  `/v1/device`, `/v1/admin` and `/v1/control`.
+- Control API changes (`StartStream`, `StopStream`, `UpdateStream`, `SetStreamDestination`)
+  write the device's `stream` shadow and return 202: the device applies them when it can and
+  reports the result in `GetStream` (`pending`, `rejected`). They take an optional
+  `clientToken` (`@idempotencyToken`), so a retry is safe.
+- Control API unions (`Source`, `Input`, `BitrateSetting`) are objects with one member, for
+  example `{"rtmp": {"key": "ingest"}}`; `{"profileDefault": {}}` clears a bitrate override.
+- `DestinationUrl` is an SRT or SRTLA URL only (`srt://host:port?streamid=…&latency=…&passphrase=…`,
+  latency in milliseconds); its documentation lists every rule, which the service and the
+  device both enforce.
 - `Pin` is `@sensitive`, so generated code redacts it from `toString` and logs.
 
 ## Building

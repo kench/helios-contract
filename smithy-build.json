@@ -1,6 +1,8 @@
 {
   "version": "1.0",
-  "sources": ["model"],
+  "sources": [
+    "model"
+  ],
   "maven": {
     "dependencies": [
       "software.amazon.smithy:smithy-aws-traits:1.75.0",
@@ -23,6 +25,15 @@
       "plugins": {
         "openapi": {
           "service": "tv.kenley.helios.contract#HeliosBootstrapAdmin",
+          "protocol": "aws.protocols#restJson1",
+          "version": "3.1.0"
+        }
+      }
+    },
+    "control-api": {
+      "plugins": {
+        "openapi": {
+          "service": "tv.kenley.helios.control#HeliosControl",
           "protocol": "aws.protocols#restJson1",
           "version": "3.1.0"
         }
