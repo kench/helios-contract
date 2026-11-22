@@ -59,7 +59,7 @@ AWS ones. In practice that means:
   reports the result in `GetStream` (`pending`, `rejected`). They take an optional
   `clientToken` (`@idempotencyToken`), so a retry is safe.
 - Wi-Fi changes (`SetWifiNetwork`, `DeleteWifiNetwork`) are the exception: they're AWS IoT
-  command executions (`helios-net-wifi-set`, `helios-net-wifi-remove`; Helios's `net.wifi.set`
+  command executions (`helios-net-wifi-set-v1`, `helios-net-wifi-remove-v1`; Helios's `net.wifi.set`
   and `net.wifi.remove`) and return 200 once the device answers, because the passphrase is a
   secret a shadow mustn't hold. AWS keeps executions, so the service seals the passphrase to the
   device's `secrets_key` first (HPKE, RFC 9180: DHKEM(P-256, HKDF-SHA256), HKDF-SHA256,

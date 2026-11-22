@@ -189,7 +189,7 @@ operation ListWifiNetworks {
 }
 
 /// Adds a Wi-Fi network for the device to join, or replaces the one with the same SSID. An AWS
-/// IoT command execution (helios-net-wifi-set, Helios's net.wifi.set), not a shadow change,
+/// IoT command execution (helios-net-wifi-set-v1, Helios's net.wifi.set), not a shadow change,
 /// because the passphrase is a secret a shadow mustn't hold. AWS keeps command executions, so
 /// the service first seals the passphrase to the device's key (HPKE, RFC 9180, to the
 /// `secrets_key` in its `helios` shadow, bound to the device and the SSID): AWS only ever holds
@@ -272,7 +272,7 @@ operation SetWifiNetwork {
     ]
 }
 
-/// Removes a Wi-Fi network from the device (an AWS IoT command execution, helios-net-wifi-remove,
+/// Removes a Wi-Fi network from the device (an AWS IoT command execution, helios-net-wifi-remove-v1,
 /// Helios's net.wifi.remove). Removing one the device doesn't have succeeds. The device must be
 /// online, as for SetWifiNetwork.
 @idempotent
