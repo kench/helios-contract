@@ -50,6 +50,7 @@ resource Device {
         ListInputs
         ListProfiles
         GetDeviceLocation
+        GetDeviceUplinks
         ListWifiNetworks
         SetWifiNetwork
         DeleteWifiNetwork
@@ -309,6 +310,156 @@ structure GpsConfiguredReceiver {
 
     /// Why gpsd didn't take it.
     error: String
+}
+
+// --- Uplinks ----------------------------------------------------------------------------------
+
+/// The device's network interfaces, as its net module last reported them (LLD 3), and what each
+/// SRTLA bond does with them: bonded, or held in standby because a better uplink shares its
+/// public address (LLD 3, section 3.5.1).
+///
+/// Public IPv4 addresses are personal data (they locate the connection, often a home), so the
+/// address itself is returned only with `includePublicAddresses`. `sharesPublicAddressWith` is
+/// always returned, so shared connections can be seen without the address. Implementations
+/// mustn't log public addresses.
+@readonly
+@http(method: "GET", uri: "/v1/control/devices/{deviceId}/uplinks", code: 200)
+operation GetDeviceUplinks {
+    input := {
+        @required
+        @httpLabel
+        deviceId: DeviceId
+
+        /// Also return each uplink's public IPv4 address. Off by default.
+        @httpQuery("includePublicAddresses")
+        includePublicAddresses: Boolean
+    }
+
+    output := {
+        /// Every interface the device reported, by name.
+        @required
+        uplinks: UplinkList
+
+        /// When the device last reported its interfaces.
+        reportedAt: DateTime
+    }
+
+    errors: [
+        DeviceNotFound
+        DeviceStateUnavailable
+    ]
+}
+
+list UplinkList {
+    member: Uplink
+}
+
+structure Uplink {
+    /// The interface's name on the device, for example enP4p65s0 or wwan0.
+    @required
+    interface: InterfaceName
+
+    /// What the device thinks it is: ethernet (built-in or USB), wifi, cellular, virtual or
+    /// other. New kinds may be added.
+    @required
+    kind: String
+
+    /// The kernel's operational state, for example up, down or dormant.
+    @required
+    operState: String
+
+    /// Whether the link has a carrier (a cable, an association, a modem connection).
+    carrier: Boolean
+
+    /// Its IPv4 addresses, with prefix length (for example 192.168.5.31/24).
+    @required
+    ipv4: Ipv4AddressList
+
+    /// The lowest metric of its IPv4 default routes in the main table; absent without one.
+    /// Lower is preferred.
+    defaultRouteMetric: Integer
+
+    /// Whether it has its own routing table and rule, so traffic from its address leaves
+    /// through it. SRTLA bonding and the public address check need this.
+    @required
+    sourceRouted: Boolean
+
+    /// The network it's on, for a Wi-Fi interface.
+    wifi: UplinkWifi
+
+    /// The device's latest check of its public IPv4 address; absent when it isn't checked (not
+    /// source-routed, or the device's check is off) or hasn't answered yet.
+    publicIpv4: PublicAddressCheck
+
+    /// What each SRTLA bond on the device does with it, while the bond is running.
+    @required
+    bonding: UplinkBondingList
+}
+
+@length(min: 1, max: 15)
+string InterfaceName
+
+list InterfaceNameList {
+    member: InterfaceName
+}
+
+list Ipv4AddressList {
+    member: String
+}
+
+structure UplinkWifi {
+    ssid: String
+
+    /// Signal strength, dBm.
+    signalDbm: Integer
+
+    frequencyMhz: Integer
+}
+
+structure PublicAddressCheck {
+    /// The public IPv4 address the latest successful check saw. Only with
+    /// `includePublicAddresses`.
+    address: String
+
+    /// The other interfaces whose latest checks saw the same public address: they leave
+    /// through the same connection.
+    @required
+    sharesPublicAddressWith: InterfaceNameList
+
+    /// When the address was last checked and found (the device reports a check that found the
+    /// same address again at most hourly).
+    checkedAt: DateTime
+
+    /// Why the latest check failed (for example timeout, connect or http 403), if it did. The
+    /// last address found stays, and doesn't count for `sharesPublicAddressWith`.
+    error: String
+
+    failedAt: DateTime
+}
+
+list UplinkBondingList {
+    member: UplinkBonding
+}
+
+structure UplinkBonding {
+    /// The device's output name, as a stream's output refers to it (for example bond).
+    @required
+    output: String
+
+    @required
+    state: UplinkBondingState
+
+    /// For standby: the bonded interface it shares a public address with.
+    sharesPublicAddressWith: InterfaceName
+}
+
+enum UplinkBondingState {
+    /// In the bond: the sender sends over it.
+    BONDED = "bonded"
+
+    /// Left out of the bond: a better uplink leaves through the same public address. It takes
+    /// over if that uplink goes.
+    STANDBY = "standby"
 }
 
 // --- Wi-Fi networks -------------------------------------------------------------------------
