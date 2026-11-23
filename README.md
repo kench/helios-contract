@@ -25,7 +25,7 @@ model/
   common.smithy      shapes shared by both services (MAC, thing name, PIN, errors, ...)
   bootstrap.smithy   device API: Bootstrap, AnswerChallenge, plus protocol tests
   admin.smithy       admin API: the Device resource and its operations
-  control.smithy     control API: devices, their inputs, profiles and location, and the Stream resource
+  control.smithy     control API: devices, their inputs, profiles, location and uplinks, and the Stream resource
 smithy-build.json    build config: OpenAPI 3.1 output for each service
 test-vectors/
   challenge-v1.json  challenge message, digest and signature vectors (TEST KEY ONLY)
@@ -73,6 +73,10 @@ AWS ones. In practice that means:
   there's none), receivers and satellites. **It returns the device's exact position**, which
   the device reports by design, to anyone allowed to call the Control API; implementations
   mustn't log positions.
+- `GetDeviceUplinks` reads the `net` and `stream` shadows (LLD 3): each interface, its public
+  IPv4 check, and whether each SRTLA bond has it bonded or in standby. Public addresses are
+  personal data: returned only with `?includePublicAddresses=true`, never logged.
+  `sharesPublicAddressWith` (interface names) is always returned.
 - Control API unions (`Source`, `Input`, `BitrateSetting`) are objects with one member, for
   example `{"rtmp": {"key": "ingest"}}`; `{"profileDefault": {}}` clears a bitrate override.
 - `DestinationUrl` is an SRT or SRTLA URL only (`srt://host:port?streamid=…&latency=…&passphrase=…`,
