@@ -49,6 +49,7 @@ resource Device {
     operations: [
         ListInputs
         ListProfiles
+        GetDeviceLocation
         ListWifiNetworks
         SetWifiNetwork
         DeleteWifiNetwork
@@ -159,6 +160,155 @@ operation ListProfiles {
         DeviceNotFound
         DeviceStateUnavailable
     ]
+}
+
+/// The device's position, as its gps module last reported it (LLD 10): the current fix, or
+/// the last one while there's no fix, with the receivers and satellites behind it.
+///
+/// **This is the device's exact location.** The device reports the full fix by design (the
+/// owner's choice), so anyone allowed to call the Control API can read where the device is.
+/// Keep positions out of logs, tickets and anything shared.
+@readonly
+@http(method: "GET", uri: "/v1/control/devices/{deviceId}/location", code: 200)
+operation GetDeviceLocation {
+    input := {
+        @required
+        @httpLabel
+        deviceId: DeviceId
+    }
+
+    output := {
+        /// Whether the device's gps module can reach gpsd.
+        @required
+        gpsd: GpsdState
+
+        /// The GPS receivers gpsd has open.
+        @required
+        receivers: GpsReceiverList
+
+        /// The current fix: mode none, with no position, when there isn't one.
+        @required
+        fix: GpsFix
+
+        /// The last fix the device had, while `fix` is none. It stays until a new fix replaces
+        /// it, so its `time` says how old it is.
+        lastFix: GpsFix
+
+        /// The satellites behind the fix, from the receiver's last report.
+        satellites: GpsSatellites
+
+        /// When the fix's mode last changed (for example, when the fix was lost).
+        @required
+        since: DateTime
+
+        /// The receiver path set in the device's config, and whether gpsd took it.
+        configuredReceiver: GpsConfiguredReceiver
+
+        /// When the device last reported its gps state.
+        reportedAt: DateTime
+    }
+
+    errors: [
+        DeviceNotFound
+        DeviceStateUnavailable
+    ]
+}
+
+enum GpsdState {
+    CONNECTED = "connected"
+
+    /// gpsd isn't running or its socket can't be opened; the module retries.
+    UNAVAILABLE = "unavailable"
+}
+
+enum GpsFixMode {
+    NONE = "none"
+
+    /// Latitude and longitude.
+    TWO_D = "2d"
+
+    /// With altitude.
+    THREE_D = "3d"
+}
+
+/// A fix. Every member but `mode` is absent when the mode is none, and any the receiver didn't
+/// report is absent too.
+structure GpsFix {
+    @required
+    mode: GpsFixMode
+
+    /// The fix's time, from the satellites (UTC).
+    time: DateTime
+
+    /// Degrees north (WGS 84).
+    latitude: Double
+
+    /// Degrees east (WGS 84).
+    longitude: Double
+
+    /// Altitude above mean sea level, metres (3d fixes).
+    altitudeM: Double
+
+    /// Speed over ground, metres per second.
+    speedMps: Double
+
+    /// Course over ground, degrees from true north.
+    trackDeg: Double
+
+    /// Vertical speed, metres per second (up is positive).
+    climbMps: Double
+
+    /// Estimated horizontal error, metres (gpsd's eph, about 95% confidence).
+    horizontalErrorM: Double
+
+    /// Estimated vertical error, metres (gpsd's epv).
+    verticalErrorM: Double
+}
+
+structure GpsSatellites {
+    /// Satellites used in the fix.
+    used: Integer
+
+    /// Satellites the receiver can see.
+    visible: Integer
+
+    /// Horizontal dilution of precision.
+    hdop: Double
+
+    /// Position dilution of precision.
+    pdop: Double
+}
+
+list GpsReceiverList {
+    member: GpsReceiver
+}
+
+structure GpsReceiver {
+    /// The receiver's device path on the device, for example /dev/ttyACM0.
+    @required
+    path: String
+
+    /// gpsd's driver for it, for example NMEA0183.
+    driver: String
+
+    /// Its serial speed, bits per second.
+    bps: Integer
+
+    /// Its USB port, for example 1-1.3, when it's on USB.
+    usbPort: UsbPort
+}
+
+structure GpsConfiguredReceiver {
+    /// The path from the device's config (`[modules.gps] device`).
+    @required
+    path: String
+
+    /// Whether gpsd has it open.
+    @required
+    added: Boolean
+
+    /// Why gpsd didn't take it.
+    error: String
 }
 
 // --- Wi-Fi networks -------------------------------------------------------------------------
