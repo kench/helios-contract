@@ -272,7 +272,6 @@ operation DeleteChallengeKey {
 
 enum DeviceRole {
     SCANNER = "scanner"
-    RELAY = "relay"
     TRANSCODER = "transcoder"
 }
 
