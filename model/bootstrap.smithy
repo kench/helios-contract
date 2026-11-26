@@ -34,7 +34,7 @@ service HeliosBootstrap {
 @httpRequestTests([
     {
         id: "BootstrapRequestWithChallengeCapability"
-        documentation: "A relay with Ethernet and Wi-Fi that can answer challenges."
+        documentation: "A board with Ethernet and Wi-Fi that can answer challenges."
         protocol: restJson1
         method: "POST"
         uri: "/v1/device/bootstrap"
