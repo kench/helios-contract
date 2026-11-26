@@ -631,6 +631,9 @@ operation ListStreams {
     output := {
         @required
         streams: StreamList
+
+        /// The device's recordings storage. Absent if the device doesn't report one.
+        recording: RecordingStorage
     }
 
     errors: [
@@ -743,6 +746,27 @@ operation StopStream {
             clientToken: "6a1f0c2e-1111-4222-8333-944455556666"
         }
     }
+    {
+        id: "UpdateStreamToStopRecording"
+        documentation: "Recording switched off; the device restarts the stream's encoder."
+        protocol: restJson1
+        method: "PATCH"
+        uri: "/v1/control/devices/d-01JD5VY2K7M9Q4R6T8V0X2Z4B6/streams/pocket"
+        headers: { "Content-Type": "application/json" }
+        body: """
+            {
+              "record": false,
+              "clientToken": "6a1f0c2e-1111-4222-8333-944455556667"
+            }
+            """
+        bodyMediaType: "application/json"
+        params: {
+            deviceId: "d-01JD5VY2K7M9Q4R6T8V0X2Z4B6"
+            streamId: "pocket"
+            record: false
+            clientToken: "6a1f0c2e-1111-4222-8333-944455556667"
+        }
+    }
 ])
 @http(method: "PATCH", uri: "/v1/control/devices/{deviceId}/streams/{streamId}", code: 202)
 operation UpdateStream {
@@ -762,6 +786,10 @@ operation UpdateStream {
         bitrate: BitrateSetting
 
         sourceCeilingPercent: SourceCeilingPercent
+
+        /// Records the stream on the device as sent (LLD 4, section 16). Switching it restarts
+        /// the stream's encoder, a few seconds' gap.
+        record: Boolean
 
         @idempotencyToken
         clientToken: ClientToken
@@ -1136,6 +1164,9 @@ structure StreamDesired {
     bitrate: BitrateSetting
 
     sourceCeilingPercent: SourceCeilingPercent
+
+    /// Set only if changed through this API; else the stream's configured `record` applies.
+    record: Boolean
 }
 
 structure StreamReported {
@@ -1170,6 +1201,70 @@ structure StreamReported {
 
     /// Active links of an SRTLA destination.
     activeLinks: Integer
+
+    lastError: String
+
+    /// The stream's local recording. Absent from devices without recordings.
+    recording: StreamRecording
+}
+
+/// A stream's local recording (LLD 4, section 16): MPEG-TS segments at
+/// `<dir>/<stream>/<run start>-<n>.ts` on the device.
+structure StreamRecording {
+    @required
+    state: RecordingState
+
+    /// This encoder run's files, relative to the storage's `dir`, such as
+    /// `pocket/20261126T101500Z-*.ts`.
+    files: String
+
+    /// The newest segment's file name, as of the device's last check (every minute).
+    segment: String
+
+    /// When this run's recording began.
+    since: DateTime
+
+    lastError: String
+}
+
+enum RecordingState {
+    /// The stream isn't set to record.
+    OFF = "off"
+
+    /// Set to record; the stream isn't running.
+    IDLE = "idle"
+
+    RECORDING = "recording"
+
+    /// The recordings storage isn't mounted.
+    UNAVAILABLE = "unavailable"
+
+    /// Above its limit with nothing left to delete; new runs don't record.
+    DISK_FULL = "disk_full"
+
+    ERROR = "error"
+}
+
+/// Where the device keeps recordings. The oldest closed segments are deleted when it fills.
+structure RecordingStorage {
+    @required
+    dir: String
+
+    /// Whether `dir` is a mounted filesystem; recording needs it.
+    @required
+    mounted: Boolean
+
+    /// Above its limit with nothing left to delete.
+    @required
+    full: Boolean
+
+    totalBytes: Long
+
+    freeBytes: Long
+
+    segments: Integer
+
+    oldest: DateTime
 
     lastError: String
 }
@@ -1248,7 +1343,7 @@ integer SourceCeilingPercent
 
 structure RejectedSetting {
     /// The desired member the device refused: source, profile, destination, bitrate,
-    /// sourceCeilingPercent.
+    /// sourceCeilingPercent, record.
     @required
     setting: String
 
