@@ -1,0 +1,302 @@
+{
+  "description": "Arguments of the display commands (model/device.smithy, HeliosDeviceCommands) as the device receives them: the JSON inside the request's base64 `args`. Helios must accept every valid case and refuse every invalid one as INVALID_MESSAGE, changing nothing; the cloud must produce valid cases only.",
+  "cases": [
+    {
+      "name": "the status screen",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "status": {}
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "a blank screen",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "blank": {}
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "a message with every field",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "Out of service",
+              "body": "Use the next door.\nThank you.",
+              "severity": "warning"
+            }
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "a message with only its title",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "Welcome"
+            }
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "a result",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "result": {
+              "outcome": "accepted",
+              "title": "Valid",
+              "body": "Have a good trip"
+            }
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "back to helios.toml",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "configured": {}
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "a title at the limit",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          }
+        }
+      },
+      "valid": true
+    },
+    {
+      "name": "no idle",
+      "command": "helios-display-idle-v1",
+      "args": {},
+      "valid": false
+    },
+    {
+      "name": "a null is never a setting",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": null
+      },
+      "valid": false
+    },
+    {
+      "name": "a template is a union member, not a string",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": "status"
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "display.show's shape is not a screen",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "template": "status",
+            "fields": {}
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "two templates at once",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "status": {},
+            "blank": {}
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "set and configured at once",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "status": {}
+          },
+          "configured": {}
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "an unknown template",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "clock": {}
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a status screen has no fields",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "status": {
+              "title": "x"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a message needs its title",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "body": "Hello"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a title of only spaces is empty",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "   "
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a title over the limit",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a result body over the limit",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "result": {
+              "outcome": "rejected",
+              "body": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "an unknown severity",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "Hi",
+              "severity": "critical"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "a result needs its outcome",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "result": {
+              "title": "Valid"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "an unknown field",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "message": {
+              "title": "Hi",
+              "colour": "red"
+            }
+          }
+        }
+      },
+      "valid": false
+    },
+    {
+      "name": "an unknown argument",
+      "command": "helios-display-idle-v1",
+      "args": {
+        "idle": {
+          "set": {
+            "blank": {}
+          }
+        },
+        "duration_s": 60
+      },
+      "valid": false
+    }
+  ]
+}

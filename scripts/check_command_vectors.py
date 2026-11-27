@@ -119,10 +119,47 @@ def update(args):
             check(args[name])
 
 
+def text(value, low, high):
+    """A screen's text: trimmed, control characters other than newlines dropped, then counted."""
+    require(isinstance(value, str), "not a string")
+    cleaned = "".join(c for c in value if c == "\n" or not (ord(c) < 32 or 127 <= ord(c) < 160)).strip()
+    require(low <= len(cleaned) <= high, f"{len(cleaned)} characters outside {low}..{high}")
+
+
+def one_of(value, allowed):
+    require(value in allowed, f"{value!r} isn't one of {allowed}")
+
+
+def screen(value):
+    def message(v):
+        members(v, ["title", "body", "severity"], ["title"])
+        text(v["title"], 1, 40)
+        if "body" in v:
+            text(v["body"], 0, 300)
+        if "severity" in v:
+            one_of(v["severity"], ["info", "success", "warning", "error"])
+
+    def result(v):
+        members(v, ["outcome", "title", "body"], ["outcome"])
+        one_of(v["outcome"], ["accepted", "rejected"])
+        if "title" in v:
+            text(v["title"], 0, 40)
+        if "body" in v:
+            text(v["body"], 0, 160)
+
+    union(value, {"status": unit, "blank": unit, "test": unit, "message": message, "result": result})
+
+
+def display_idle(args):
+    members(args, ["idle"], ["idle"])
+    setting(screen)(args["idle"])
+
+
 COMMANDS = {
     "helios-stream-start-v1": stream_only,
     "helios-stream-stop-v1": stream_only,
     "helios-stream-update-v1": update,
+    "helios-display-idle-v1": display_idle,
 }
 
 
