@@ -29,6 +29,7 @@ service HeliosDeviceCommands {
         StreamStart
         StreamStop
         StreamUpdate
+        DisplayIdle
     ]
 }
 
@@ -144,6 +145,97 @@ union RecordSetting {
 
     /// The stream's `record` in `helios.toml`.
     configured: Unit
+}
+
+// --- display -------------------------------------------------------------------------------
+
+/// `helios-display-idle-v1` (Helios's `display.idle`): sets the idle screen, the one shown when
+/// no `display.show` screen is up. A shown screen stays until it expires or is cleared. The idle
+/// screen lasts until Helios restarts; then `helios.toml`'s `idle_template` applies again
+/// (owner, 2026-11-26). Everything the device checks is in the model: a screen that doesn't
+/// match it is `INVALID_MESSAGE`, and the device changes nothing.
+operation DisplayIdle {
+    input := {
+        @required
+        idle: IdleSetting
+    }
+
+    output := {
+        /// The display as it is after the command.
+        @required
+        status: DisplayStatus
+    }
+}
+
+/// The `display` shadow's reported state, as Helios reports it (template, shown_at, until, idle,
+/// available, geometry, console_bound, time_zone, bold_font, error; LLD 9, section 7). Modelled
+/// in full in a later version, with the reported shadows.
+document DisplayStatus
+
+union IdleSetting {
+    set: Screen
+
+    /// The `idle_template` in `helios.toml` (`status` by default).
+    configured: Unit
+}
+
+/// A screen, by template (LLD 9, section 6). Text is trimmed and control characters other than
+/// newlines are dropped before the lengths are checked; lengths are in characters.
+union Screen {
+    /// The connection, the device's address and the clock.
+    status: Unit
+
+    blank: Unit
+
+    /// A test pattern for checking the panel.
+    test: Unit
+
+    message: MessageScreen
+
+    result: ResultScreen
+}
+
+structure MessageScreen {
+    @required
+    title: ScreenTitle
+
+    body: MessageBody
+
+    /// `info` if left out.
+    severity: MessageSeverity
+}
+
+structure ResultScreen {
+    @required
+    outcome: ResultOutcome
+
+    title: ResultTitle
+
+    body: ResultBody
+}
+
+@length(min: 1, max: 40)
+string ScreenTitle
+
+@length(max: 40)
+string ResultTitle
+
+@length(max: 300)
+string MessageBody
+
+@length(max: 160)
+string ResultBody
+
+enum MessageSeverity {
+    INFO = "info"
+    SUCCESS = "success"
+    WARNING = "warning"
+    ERROR = "error"
+}
+
+enum ResultOutcome {
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
 }
 
 /// A secret sealed to the device (LLD 3, section 10.7): HPKE base mode, DHKEM(P-256,

@@ -10,7 +10,8 @@ source of truth for:
   agents see devices and their streams and start, stop and adjust them (HLD section 7.3),
 - the **challenge test vectors**, used by both sides to test the signed bootstrap challenge,
 - the **device commands** (`HeliosDeviceCommands`, namespace `tv.kenley.helios.device`): the
-  AWS IoT commands the cloud sends a device and its answers, with argument test vectors. Writes
+  AWS IoT commands the cloud sends a device (stream start, stop and update; the display's idle
+  screen) and its answers, with argument test vectors. Writes
   to a device are commands, its shadows reported-only (Notion: *Helios - State Management:
   Tenets and Practices*). The reported shadows' shapes come later.
 
