@@ -19,11 +19,15 @@ use tv.kenley.helios.contract#ThingName
 /// adjust the streams (HLD section 7.3). Served by the bootstrap service's REST API under
 /// /v1/control. Authenticated with AWS IAM (SigV4, API Gateway): callers assume helios-operator.
 ///
-/// Changes are written to the device's `stream` shadow as desired state and return 202: the
-/// device applies them when it can (also after being offline) and reports the result, which
-/// GetStream shows. The device is the final judge of every value: it refuses sources, profiles
-/// and destinations it can't use, and reports why. The cloud never sends ffmpeg arguments or
-/// pipelines; profiles and the streams themselves are defined on the device.
+/// Changes are commands to the device (HeliosDeviceCommands; the page "Helios - State
+/// Management: Tenets and Practices"): the device must be online, applies a change whole or not
+/// at all, and answers within seconds, so a change's response shows the stream as it is after
+/// it. A device that doesn't answer gives DeviceUnreachable; a refusal gives StreamChangeRefused
+/// with every reason. Nothing is queued for later. Devices whose Helios predates the stream
+/// commands still get changes as the `stream` shadow's desired state, applied when they can,
+/// with `pending` until they report them. The device is the final judge of every value. The
+/// cloud never sends ffmpeg arguments or pipelines; profiles and the streams themselves are
+/// defined on the device.
 @restJson1
 @sigv4(name: "execute-api")
 @title("Helios Control API")
@@ -667,7 +671,9 @@ operation GetStream {
     ]
 }
 
-/// Sets a stream live: it runs whenever its source is there. Idempotent.
+/// Sets a stream live: it runs whenever its source is there. Idempotent. The response comes once
+/// the device has taken it (helios-stream-start-v1), with the stream `starting` or
+/// `waiting_for_input`; going on air takes a few seconds more.
 @idempotent
 @http(method: "POST", uri: "/v1/control/devices/{deviceId}/streams/{streamId}/start", code: 202)
 operation StartStream {
@@ -689,10 +695,11 @@ operation StartStream {
     errors: [
         DeviceNotFound
         StreamNotFound
+        DeviceUnreachable
     ]
 }
 
-/// Sets a stream stopped. Idempotent.
+/// Sets a stream stopped (helios-stream-stop-v1). Idempotent.
 @idempotent
 @http(method: "POST", uri: "/v1/control/devices/{deviceId}/streams/{streamId}/stop", code: 202)
 operation StopStream {
@@ -714,11 +721,14 @@ operation StopStream {
     errors: [
         DeviceNotFound
         StreamNotFound
+        DeviceUnreachable
     ]
 }
 
-/// Changes a stream's source, profile or bitrate. Members left out are unchanged. The
-/// destination has its own operation, SetStreamDestination.
+/// Changes a stream's source, profile, bitrate, ceiling or recording (helios-stream-update-v1).
+/// Members left out are unchanged. The device applies them all or none: a refusal gives
+/// StreamChangeRefused with every reason. The destination has its own operation,
+/// SetStreamDestination.
 @idempotent
 @httpRequestTests([
     {
@@ -801,12 +811,16 @@ operation UpdateStream {
         DeviceNotFound
         StreamNotFound
         SettingUnavailable
+        DeviceUnreachable
+        StreamChangeRefused
     ]
 }
 
 /// Sets where a stream's video goes: an SRT or SRTLA URL (DestinationUrl). Its own operation
 /// because it decides where a device's video is sent; the response shows the previous
-/// destination as well as the new one.
+/// destination as well as the new one. The URL goes to the device sealed to its key (it can hold a
+/// passphrase, and AWS keeps a command's parameters); the cloud keeps it, encrypted at rest, so
+/// GetStream can show it to operators.
 @idempotent
 @httpRequestTests([
     {
@@ -853,9 +867,12 @@ operation SetStreamDestination {
         @required
         stream: StreamDescription
 
-        /// The destination before this change (the desired one if set, else the reported one).
+        /// The destination before this change (the one last set through this API if any, else the
+        /// reported one).
         previous: DestinationUrl
 
+        /// The `stream` shadow's version: the one written for a device on desired state, the one
+        /// read for a device on commands (deprecated, as `pending` is).
         @required
         shadowVersion: Long
     }
@@ -864,6 +881,8 @@ operation SetStreamDestination {
         DeviceNotFound
         StreamNotFound
         InvalidDestination
+        DeviceUnreachable
+        StreamChangeRefused
     ]
 }
 
@@ -897,12 +916,14 @@ operation GetStreamStatus {
     ]
 }
 
-/// What a change returns: the stream with the new desired state, and the shadow version
-/// written. The device applies it later; GetStream shows when reported has caught up.
+/// What a change returns: the stream as it is after the change. For a device on commands it has
+/// applied it already; for one on desired state, GetStream shows when reported has caught up.
 structure StreamChangeOutput {
     @required
     stream: StreamDescription
 
+    /// The `stream` shadow's version: the one written for a device on desired state, the one
+    /// read for a device on commands (deprecated, as `pending` is).
     @required
     shadowVersion: Long
 }
@@ -1131,7 +1152,8 @@ list StreamList {
     member: StreamDescription
 }
 
-/// A stream: what's been asked of it (desired) and what the device reports (reported).
+/// A stream: what's been asked of it through this API (desired) and what the device reports
+/// (reported).
 structure StreamDescription {
     @required
     streamId: StreamId
@@ -1142,14 +1164,21 @@ structure StreamDescription {
     /// What the device last reported. Absent if it never has.
     reported: StreamReported
 
-    /// Whether the device hasn't caught up with the desired state yet.
+    /// Whether the device hasn't caught up with the desired state yet. Always false for a device
+    /// on commands, which applies a change before the response; computed only for devices whose
+    /// Helios predates the stream commands, and removed with them.
+    @deprecated(message: "Changes are commands now; a change's response shows the result.", since: "2026-11-26")
     @required
     pending: Boolean
 
-    /// Desired values the device refused, and why.
+    /// Desired values a device on desired state refused, and why. A device on commands refuses a
+    /// change in the response instead (StreamChangeRefused).
     rejected: RejectedSettingList
 }
 
+/// What's been asked of a stream through this API: for a device on commands, the cloud's record
+/// of the settings it last applied (stored encrypted at rest, so a destination's passphrase is
+/// shown to operators); for one on desired state, the shadow's desired state.
 structure StreamDesired {
     @required
     state: DesiredState
@@ -1402,10 +1431,15 @@ string WifiSsid
 @pattern("^([ -~]{8,63}|[0-9A-Fa-f]{64})$")
 string WifiPassphrase
 
-/// A network the device is set to join. Never includes the passphrase.
+/// A network the device is set to join.
 structure WifiNetwork {
     @required
     ssid: WifiSsid
+
+    /// The passphrase as last set through this API, from the cloud's record (stored encrypted at
+    /// rest; for operators). Absent for an open network, and for one set before the cloud kept
+    /// passphrases or on the device by other means.
+    passphrase: WifiPassphrase
 
     /// open or personal.
     @required
@@ -1472,6 +1506,31 @@ structure WifiNetworkRefused {
     /// no_adapter, too_many, invalid_ssid, invalid_passphrase, secret_unreadable (the device
     /// couldn't open the sealed passphrase), no_secrets_key (the device reports no key to seal
     /// it to; nothing was sent), unsupported (its Helios has no Wi-Fi commands) or apply_failed.
+    reason: String
+}
+
+/// The device refused a stream change and changed nothing. Every refused setting is listed.
+@error("client")
+@httpError(409)
+structure StreamChangeRefused {
+    message: String
+
+    @required
+    refused: RefusedSettingList
+}
+
+list RefusedSettingList {
+    member: RefusedSetting
+}
+
+structure RefusedSetting {
+    /// The input member refused: source, profile, destination, bitrate, sourceCeilingPercent or
+    /// record.
+    @required
+    setting: String
+
+    /// Why, for people.
+    @required
     reason: String
 }
 

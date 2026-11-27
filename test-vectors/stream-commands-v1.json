@@ -1,0 +1,123 @@
+{
+  "description": "Arguments of the stream commands (model/device.smithy, HeliosDeviceCommands) as the device receives them: the JSON inside the request's base64 `args`. Helios must accept every valid case and refuse every invalid one as INVALID_MESSAGE; the cloud must produce valid cases only. The sealed values are placeholders: they test the shape, not the sealing.",
+  "cases": [
+    {
+      "name": "start",
+      "command": "helios-stream-start-v1",
+      "args": {"stream_id": "pocket"},
+      "valid": true
+    },
+    {
+      "name": "stop",
+      "command": "helios-stream-stop-v1",
+      "args": {"stream_id": "pocket"},
+      "valid": true
+    },
+    {
+      "name": "start without a stream",
+      "command": "helios-stream-start-v1",
+      "args": {},
+      "valid": false
+    },
+    {
+      "name": "update every setting",
+      "command": "helios-stream-update-v1",
+      "args": {
+        "stream_id": "pocket",
+        "source": {"set": {"camera": {"video": "usb:5-1", "audio": "usb:5-1"}}},
+        "profile": {"set": "hevc-camera"},
+        "destination": {"set": {"sealed": {"enc": "BPlaceholderEncapsulatedKey", "ct": "PlaceholderCiphertext"}}},
+        "bitrate": {"set": 3000},
+        "source_ceiling_percent": {"set": 150},
+        "record": {"set": true}
+      },
+      "valid": true
+    },
+    {
+      "name": "update back to helios.toml",
+      "command": "helios-stream-update-v1",
+      "args": {
+        "stream_id": "rpi5test",
+        "source": {"configured": {}},
+        "profile": {"configured": {}},
+        "destination": {"configured": {}},
+        "bitrate": {"configured": {}},
+        "source_ceiling_percent": {"configured": {}},
+        "record": {"configured": {}}
+      },
+      "valid": true
+    },
+    {
+      "name": "update to a test pattern with its defaults",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "source": {"set": {"test": {}}}},
+      "valid": true
+    },
+    {
+      "name": "update to an RTMP key",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "source": {"set": {"rtmp": {"key": "ingest"}}}},
+      "valid": true
+    },
+    {
+      "name": "update with nothing to change",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket"},
+      "valid": true
+    },
+    {
+      "name": "a null is never a setting",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "bitrate": null},
+      "valid": false
+    },
+    {
+      "name": "a bare value is never a setting",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "bitrate": 3000},
+      "valid": false
+    },
+    {
+      "name": "a setting is set or configured, not both",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "profile": {"set": "hevc-720p", "configured": {}}},
+      "valid": false
+    },
+    {
+      "name": "a destination is never in plain text",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "destination": {"set": "srt://ingest.example.com:4001?streamid=pocket"}},
+      "valid": false
+    },
+    {
+      "name": "a bitrate below the model's range",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "bitrate": {"set": 50}},
+      "valid": false
+    },
+    {
+      "name": "a ceiling above the model's range",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "source_ceiling_percent": {"set": 401}},
+      "valid": false
+    },
+    {
+      "name": "two sources at once",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "source": {"set": {"test": {}, "rtmp": {"key": "ingest"}}}},
+      "valid": false
+    },
+    {
+      "name": "an unknown setting",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket", "bitrate_kbps": {"set": 3000}},
+      "valid": false
+    },
+    {
+      "name": "a stream id outside the pattern",
+      "command": "helios-stream-update-v1",
+      "args": {"stream_id": "pocket/../x"},
+      "valid": false
+    }
+  ]
+}
