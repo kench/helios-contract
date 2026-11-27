@@ -20,7 +20,8 @@ they bump the submodule.
 
 ```sh
 smithy build                     # Smithy CLI 1.75.0 (pinned in ci.yml); fails on any validation error
-python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `cryptography`
+python3 scripts/check_challenge_vectors.py test-vectors/challenge-*.json   # needs `cryptography`
+python3 scripts/check_command_vectors.py test-vectors/*-commands-v*.json
 ```
 
 ## Rules
@@ -34,5 +35,9 @@ python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `crypto
   watches the release.
 - `test-vectors/` use a published test key; never put a real device key in this repository.
 - Control API rules (owner, 2026-11-21): destinations are SRT or SRTLA URLs only; the cloud never
-  sends ffmpeg arguments or pipelines; profiles and streams are defined on the device; changes go
-  through the `stream` shadow's desired state.
+  sends ffmpeg arguments or pipelines; profiles and streams are defined on the device.
+- State (owner, 2026-11-26; Notion *Helios - State Management: Tenets and Practices*): writes to a
+  device are commands (`device.smithy`), applied whole or refused whole, never queued; shadows are
+  reported-only. Settings in commands are `set` or `configured`, never null. Secrets go to the
+  device sealed to its key; the cloud may keep them encrypted at rest for operators. Don't add
+  desired-state settings.

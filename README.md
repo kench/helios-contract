@@ -9,7 +9,10 @@ source of truth for:
 - the **Control API** (`HeliosControl`, namespace `tv.kenley.helios.control`): operators and
   agents see devices and their streams and start, stop and adjust them (HLD section 7.3),
 - the **challenge test vectors**, used by both sides to test the signed bootstrap challenge,
-- later, the MQTT message shapes from the messaging design (LLD 2).
+- the **device commands** (`HeliosDeviceCommands`, namespace `tv.kenley.helios.device`): the
+  AWS IoT commands the cloud sends a device and its answers, with argument test vectors. Writes
+  to a device are commands, its shadows reported-only (Notion: *Helios - State Management:
+  Tenets and Practices*). The reported shadows' shapes come later.
 
 Design docs (Notion): *Helios - Bootstrap API*, *Helios - LLD 1*, section 4.8, and the HLD,
 section 7.3 (the Control API).
@@ -26,11 +29,14 @@ model/
   bootstrap.smithy   device API: Bootstrap, AnswerChallenge, plus protocol tests
   admin.smithy       admin API: the Device resource and its operations
   control.smithy     control API: devices, their inputs, profiles, location and uplinks, and the Stream resource
+  device.smithy      device commands: stream start, stop and update (not an HTTP API)
 smithy-build.json    build config: OpenAPI 3.1 output for each service
 test-vectors/
   challenge-v1.json  challenge message, digest and signature vectors (TEST KEY ONLY)
+  stream-commands-v1.json  valid and invalid arguments of the stream commands
 scripts/
   generate_challenge_vectors.py   regenerates challenge-v1.json
+  check_command_vectors.py        checks the command vectors against a reference reading of the model
   check_challenge_vectors.py      checks the vector files (run in CI)
   requirements.txt                Python dependencies for both scripts
 .github/workflows/ci.yml          CI and releases
@@ -88,7 +94,8 @@ AWS ones. In practice that means:
 
 ```sh
 smithy build        # needs the Smithy CLI (1.75.0); Maven dependencies come from smithy-build.json
-python3 scripts/check_challenge_vectors.py test-vectors/*.json   # needs `cryptography`
+python3 scripts/check_challenge_vectors.py test-vectors/challenge-*.json   # needs `cryptography`
+python3 scripts/check_command_vectors.py test-vectors/*-commands-v*.json
 ```
 
 The Smithy CLI version is pinned in `.github/workflows/ci.yml` (`SMITHY_VERSION`) and must match
@@ -143,7 +150,8 @@ python3 scripts/generate_challenge_vectors.py > test-vectors/challenge-v1.json
 - **Smithy build:** installs the pinned Smithy CLI (checking its published SHA-256), runs
   `smithy build`, which fails on any validation error, and uploads the OpenAPI files as the
   `openapi` artifact.
-- **Challenge test vectors:** runs `check_challenge_vectors.py` on every file in `test-vectors/`.
+- **Challenge test vectors:** runs `check_challenge_vectors.py` on the challenge vectors and
+  `check_command_vectors.py` on the command vectors.
 - **Release:** pushing a tag `vX.Y.Z` (once both jobs pass) creates a GitHub release with the
   OpenAPI files and the test vectors attached.
 
