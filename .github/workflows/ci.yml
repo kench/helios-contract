@@ -46,6 +46,13 @@ jobs:
       - name: Build model
         run: smithy build
 
+      # The report vectors' responses must fit the API the model generates.
+      - name: Check report vectors
+        run: |
+          python3 scripts/check_report_vectors.py \
+            build/smithy/control-api/openapi/HeliosControl.openapi.json \
+            test-vectors/control-reports-v*.json
+
       - name: Upload OpenAPI
         uses: actions/upload-artifact@v7
         with:
