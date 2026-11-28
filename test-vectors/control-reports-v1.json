@@ -1,0 +1,2874 @@
+{
+  "description": "What the Control API answers for a device's reports: each case gives the `reported` section of the device's named shadows (stream, net, gps; absent means no shadow), a read request, and the response. Recorded from helios-cloud's Control API (2026-11-27) with no settings kept in the cloud, so `desired` is what the device reports. A device that serves the same API itself (LLD 13) must give the same status, error type and, for 200, the same body. Error messages aren't compared, so they're left out. Fields that come from the shadow's metadata (reportedAt) aren't in these cases: a device may add them. {deviceId} stands for the device's own ID; other path parameters are in params.",
+  "cases": [
+    {
+      "name": "list-streams",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "streams": [
+            {
+              "streamId": "backpack",
+              "desired": {
+                "state": "stopped"
+              },
+              "pending": false,
+              "reported": {
+                "state": "stopped",
+                "since": "2026-11-21T20:00:00Z",
+                "source": {
+                  "camera": {
+                    "video": "0bda:5830:CAM1",
+                    "audio": "0bda:5830:CAM1"
+                  }
+                },
+                "profile": "cam",
+                "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+                "bitrateKbps": 4000,
+                "activeLinks": 2
+              }
+            },
+            {
+              "streamId": "pattern",
+              "desired": {
+                "state": "live"
+              },
+              "pending": false
+            },
+            {
+              "streamId": "pocket",
+              "desired": {
+                "state": "live"
+              },
+              "pending": false,
+              "reported": {
+                "state": "live",
+                "since": "2026-11-21T22:40:00Z",
+                "source": {
+                  "rtmp": {
+                    "key": "ingest-1"
+                  }
+                },
+                "profile": "hevc",
+                "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+                "bitrateKbps": 3000,
+                "bitrateOverrideKbps": 3000,
+                "bitrateCeilingKbps": 2668,
+                "sourceKbps": 3812,
+                "encoder": {
+                  "fps": 29.97,
+                  "bitrateKbps": 2701.5,
+                  "dropFrames": 0,
+                  "dupFrames": 2,
+                  "speed": 1
+                },
+                "activeLinks": 1
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "get-stream-pocket",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams/{streamId}",
+        "params": {
+          "streamId": "pocket"
+        }
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "stream": {
+            "streamId": "pocket",
+            "desired": {
+              "state": "live"
+            },
+            "pending": false,
+            "reported": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00Z",
+              "source": {
+                "rtmp": {
+                  "key": "ingest-1"
+                }
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrateKbps": 3000,
+              "bitrateOverrideKbps": 3000,
+              "bitrateCeilingKbps": 2668,
+              "sourceKbps": 3812,
+              "encoder": {
+                "fps": 29.97,
+                "bitrateKbps": 2701.5,
+                "dropFrames": 0,
+                "dupFrames": 2,
+                "speed": 1
+              },
+              "activeLinks": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "get-stream-backpack",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams/{streamId}",
+        "params": {
+          "streamId": "backpack"
+        }
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "stream": {
+            "streamId": "backpack",
+            "desired": {
+              "state": "stopped"
+            },
+            "pending": false,
+            "reported": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00Z",
+              "source": {
+                "camera": {
+                  "video": "0bda:5830:CAM1",
+                  "audio": "0bda:5830:CAM1"
+                }
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrateKbps": 4000,
+              "activeLinks": 2
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "get-stream-pattern",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams/{streamId}",
+        "params": {
+          "streamId": "pattern"
+        }
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "stream": {
+            "streamId": "pattern",
+            "desired": {
+              "state": "live"
+            },
+            "pending": false
+          }
+        }
+      }
+    },
+    {
+      "name": "get-stream-missing",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams/{streamId}",
+        "params": {
+          "streamId": "nope"
+        }
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 404,
+        "errorType": "StreamNotFound"
+      }
+    },
+    {
+      "name": "list-streams-recording",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ],
+              "recording": {
+                "state": "recording",
+                "files": "pocket/20261126T101500Z-*.ts",
+                "segment": "20261126T101500Z-00003.ts",
+                "since": "2026-11-26T10:15:00.000Z",
+                "last_error": null
+              }
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded",
+              "recording": {
+                "state": "idle",
+                "files": null,
+                "segment": null,
+                "since": null,
+                "last_error": null
+              }
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc",
+              "recording": {
+                "state": "paused"
+              },
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pattern",
+              "bitrate_kbps": 2000
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ],
+          "recording": {
+            "dir": "/var/lib/helios-stream/recordings",
+            "mounted": true,
+            "full": false,
+            "last_error": null,
+            "total_bytes": 125371473920,
+            "free_bytes": 118000000000,
+            "segments": 4,
+            "oldest": "2026-11-26T10:25:00.000Z"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "streams": [
+            {
+              "streamId": "backpack",
+              "desired": {
+                "state": "stopped"
+              },
+              "pending": false,
+              "reported": {
+                "state": "stopped",
+                "since": "2026-11-21T20:00:00Z",
+                "source": {
+                  "camera": {
+                    "video": "0bda:5830:CAM1",
+                    "audio": "0bda:5830:CAM1"
+                  }
+                },
+                "profile": "cam",
+                "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+                "bitrateKbps": 4000,
+                "activeLinks": 2,
+                "recording": {
+                  "state": "idle"
+                }
+              }
+            },
+            {
+              "streamId": "pattern",
+              "desired": {
+                "state": "live"
+              },
+              "pending": false,
+              "reported": {
+                "state": "starting",
+                "since": "2026-11-21T22:00:00Z",
+                "source": {
+                  "test": {
+                    "size": "1280x720",
+                    "fps": 30
+                  }
+                },
+                "profile": "hevc",
+                "destination": "srt://ingest.example.com:4001?streamid=publish/live/pattern",
+                "bitrateKbps": 2000
+              }
+            },
+            {
+              "streamId": "pocket",
+              "desired": {
+                "state": "live"
+              },
+              "pending": false,
+              "reported": {
+                "state": "live",
+                "since": "2026-11-21T22:40:00Z",
+                "source": {
+                  "rtmp": {
+                    "key": "ingest-1"
+                  }
+                },
+                "profile": "hevc",
+                "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+                "bitrateKbps": 3000,
+                "bitrateOverrideKbps": 3000,
+                "bitrateCeilingKbps": 2668,
+                "sourceKbps": 3812,
+                "encoder": {
+                  "fps": 29.97,
+                  "bitrateKbps": 2701.5,
+                  "dropFrames": 0,
+                  "dupFrames": 2,
+                  "speed": 1
+                },
+                "activeLinks": 1,
+                "recording": {
+                  "state": "recording",
+                  "files": "pocket/20261126T101500Z-*.ts",
+                  "segment": "20261126T101500Z-00003.ts",
+                  "since": "2026-11-26T10:15:00Z"
+                }
+              }
+            }
+          ],
+          "recording": {
+            "dir": "/var/lib/helios-stream/recordings",
+            "mounted": true,
+            "full": false,
+            "totalBytes": 125371473920,
+            "freeBytes": 118000000000,
+            "segments": 4,
+            "oldest": "2026-11-26T10:25:00Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "list-streams-current-daemon",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "key": "ingest",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "bitrate_kbps": 6000,
+              "bitrate_override_kbps": null,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": null,
+              "encoder": null,
+              "output": "kenley",
+              "last_error": null
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct"
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest": {
+                "address": "192.168.5.84"
+              }
+            },
+            "last_error": null
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "streams": [
+            {
+              "streamId": "pocket",
+              "desired": {
+                "state": "live"
+              },
+              "pending": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "list-streams-no-shadow",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/streams"
+      },
+      "reported": {},
+      "response": {
+        "status": 409,
+        "errorType": "DeviceStateUnavailable"
+      }
+    },
+    {
+      "name": "list-inputs",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/inputs"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "inputs": [
+            {
+              "camera": {
+                "selector": "0bda:5830:CAM1",
+                "port": "1-1.3",
+                "hasAudio": true,
+                "product": "Webcam",
+                "manufacturer": "Realtek",
+                "formats": [
+                  {
+                    "pixelFormat": "MJPG",
+                    "width": 1920,
+                    "height": 1080,
+                    "fps": [
+                      30,
+                      15
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "audio": {
+                "selector": "usb:1-1.4",
+                "port": "1-1.4",
+                "product": "USB Mic"
+              }
+            },
+            {
+              "rtmp": {
+                "key": "ingest",
+                "publishUrl": "rtmp://192.168.5.31:1935/live/ingest"
+              }
+            },
+            {
+              "rtmp": {
+                "key": "ingest-1",
+                "publishUrl": "rtmp://192.168.5.31:1935/live/ingest-1",
+                "publisher": {
+                  "address": "192.168.5.84",
+                  "since": "2026-11-21T22:39:58Z",
+                  "videoCodec": "H264",
+                  "width": 1920,
+                  "height": 1080,
+                  "videoKbps": 3812
+                }
+              }
+            },
+            {
+              "test": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "list-inputs-unreported",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/inputs"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "key": "ingest",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "bitrate_kbps": 6000,
+              "bitrate_override_kbps": null,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": null,
+              "encoder": null,
+              "output": "kenley",
+              "last_error": null
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct"
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest": {
+                "address": "192.168.5.84"
+              }
+            },
+            "last_error": null
+          }
+        }
+      },
+      "response": {
+        "status": 409,
+        "errorType": "DeviceStateUnavailable"
+      }
+    },
+    {
+      "name": "list-profiles",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/profiles"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "camera": 1,
+                "key": "ingest-1",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "destination": "srt://ingest.example.com:4001?streamid=publish/live/pocket&latency=2000",
+              "bitrate_kbps": 3000,
+              "bitrate_override_kbps": 3000,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": 2668,
+              "encoder": {
+                "fps": 29.97,
+                "bitrate_kbps": 2701.5,
+                "drop_frames": 0,
+                "dup_frames": 2,
+                "speed": 1.0
+              },
+              "output": "kenley",
+              "last_error": null,
+              "rejected": [
+                {
+                  "setting": "profile",
+                  "reason": "no profile hevc-720p",
+                  "at": "2026-11-21T22:41:00.000Z"
+                },
+                {
+                  "setting": "broken"
+                }
+              ]
+            },
+            "backpack": {
+              "state": "stopped",
+              "since": "2026-11-21T20:00:00.000Z",
+              "desired": "stopped",
+              "source": {
+                "type": "camera",
+                "video": "0bda:5830:CAM1",
+                "audio": "0bda:5830:CAM1",
+                "product": "Webcam"
+              },
+              "profile": "cam",
+              "destination": "srtla://10.0.0.1:5000?streamid=publish/live/backpack",
+              "bitrate_kbps": 4000,
+              "output": "bonded"
+            },
+            "pattern": {
+              "state": "starting",
+              "since": "2026-11-21T22:00:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "test",
+                "size": "1280x720",
+                "fps": 30
+              },
+              "profile": "hevc"
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct",
+              "active_links": 1
+            },
+            "bonded": {
+              "state": "up",
+              "active_links": 2
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest-1": {
+                "address": "192.168.5.84",
+                "since": "2026-11-21T22:39:58.000Z",
+                "video_codec": "H264",
+                "width": 1920,
+                "height": 1080,
+                "video_kbps": 3812
+              },
+              "ingest": {
+                "address": "192.168.5.90"
+              }
+            }
+          },
+          "profiles": {
+            "hevc": {
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrate_mode": "adaptive",
+              "bitrate_kbps": 6000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "",
+              "audio": "copy"
+            },
+            "cam": {
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "fixed",
+              "bitrate_kbps": 4000,
+              "min_bitrate_kbps": 1000,
+              "max_bitrate_kbps": 8000,
+              "scale": "1280x720",
+              "audio": "aac"
+            },
+            "odd": {
+              "video": "copy",
+              "encoder": "ffmpeg",
+              "bitrate_mode": "turbo",
+              "bitrate_kbps": 1,
+              "min_bitrate_kbps": 1,
+              "max_bitrate_kbps": 1,
+              "audio": "copy"
+            }
+          },
+          "inputs": [
+            {
+              "type": "camera",
+              "selector": "0bda:5830:CAM1",
+              "port": "1-1.3",
+              "product": "Webcam",
+              "manufacturer": "Realtek",
+              "has_audio": true,
+              "formats": [
+                {
+                  "pixel_format": "MJPG",
+                  "width": 1920,
+                  "height": 1080,
+                  "fps": [
+                    30,
+                    15
+                  ]
+                },
+                {
+                  "pixel_format": "YUYV",
+                  "width": 640
+                }
+              ]
+            },
+            {
+              "type": "audio",
+              "selector": "usb:1-1.4",
+              "port": "1-1.4",
+              "product": "USB Mic"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest"
+            },
+            {
+              "type": "rtmp",
+              "key": "ingest-1",
+              "publish_url": "rtmp://192.168.5.31:1935/live/ingest-1"
+            },
+            {
+              "type": "test"
+            },
+            {
+              "type": "camera",
+              "selector": "no-port"
+            },
+            {
+              "type": "audio"
+            },
+            {
+              "type": "rtmp"
+            },
+            {
+              "type": "hologram"
+            }
+          ]
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "profiles": [
+            {
+              "name": "cam",
+              "video": "libx264",
+              "encoder": "ffmpeg",
+              "bitrateMode": "fixed",
+              "bitrateKbps": 4000,
+              "minBitrateKbps": 1000,
+              "maxBitrateKbps": 8000,
+              "audio": "aac",
+              "scale": "1280x720"
+            },
+            {
+              "name": "hevc",
+              "video": "hevc_rkmpp",
+              "encoder": "belacoder",
+              "bitrateMode": "adaptive",
+              "bitrateKbps": 6000,
+              "minBitrateKbps": 1000,
+              "maxBitrateKbps": 8000,
+              "audio": "copy"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "list-profiles-unreported",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/profiles"
+      },
+      "reported": {
+        "stream": {
+          "streams": {
+            "pocket": {
+              "state": "live",
+              "since": "2026-11-21T22:40:00.000Z",
+              "desired": "live",
+              "source": {
+                "type": "rtmp",
+                "key": "ingest",
+                "publisher": "192.168.5.84"
+              },
+              "profile": "hevc",
+              "bitrate_kbps": 6000,
+              "bitrate_override_kbps": null,
+              "source_kbps": 3812,
+              "bitrate_ceiling_kbps": null,
+              "encoder": null,
+              "output": "kenley",
+              "last_error": null
+            }
+          },
+          "outputs": {
+            "kenley": {
+              "state": "direct"
+            }
+          },
+          "rtmp_ingest": {
+            "state": "ok",
+            "publishers": {
+              "ingest": {
+                "address": "192.168.5.84"
+              }
+            },
+            "last_error": null
+          }
+        }
+      },
+      "response": {
+        "status": 409,
+        "errorType": "DeviceStateUnavailable"
+      }
+    },
+    {
+      "name": "get-uplinks",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/uplinks"
+      },
+      "reported": {
+        "net": {
+          "truncated": false,
+          "interfaces": {
+            "enP3p49s0": {
+              "kind": "ethernet",
+              "oper_state": "down",
+              "carrier": false,
+              "ipv4": [],
+              "default_routes": [],
+              "source_route": null,
+              "public_ipv4": null
+            },
+            "enP4p65s0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.31/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv6",
+                  "gateway": "fe80::1",
+                  "metric": 50
+                },
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 100
+                }
+              ],
+              "source_route": {
+                "table": 10003,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:00Z"
+              }
+            },
+            "wlP2p33s0": {
+              "kind": "wifi",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.12/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 600
+                }
+              ],
+              "source_route": {
+                "table": 10004,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:05Z"
+              },
+              "wifi": {
+                "ssid": "Bench",
+                "signal_dbm": -38,
+                "frequency_mhz": 5240,
+                "bssid": "02:00:00:00:00:01"
+              }
+            },
+            "usb0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "172.20.10.2/28"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "172.20.10.1",
+                  "metric": 700
+                }
+              ],
+              "source_route": {
+                "table": 10005,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T15:00:00Z",
+                "error": "timeout",
+                "failed_at": "2026-11-23T16:13:00Z"
+              }
+            },
+            "wwan0": {
+              "kind": "cellular",
+              "oper_state": "up",
+              "ipv4": [
+                "10.64.12.9/30"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "10.64.12.10",
+                  "metric": 800
+                }
+              ],
+              "source_route": {
+                "table": 10006,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "198.51.100.9",
+                "checked_at": "2026-11-23T16:12:10Z"
+              }
+            },
+            "odd": "not an object"
+          }
+        },
+        "stream": {
+          "outputs": {
+            "bond": {
+              "state": "up",
+              "local_port": 5000,
+              "uplinks": [
+                "10.64.12.9",
+                "172.20.10.2",
+                "192.168.5.31"
+              ],
+              "standby": [
+                {
+                  "interface": "wlP2p33s0",
+                  "address": "192.168.5.12",
+                  "shares_public_address_with": "enP4p65s0"
+                }
+              ],
+              "active_links": 3,
+              "total_links": 3
+            },
+            "old": {
+              "state": "stopped",
+              "uplinks": [
+                "192.168.5.12"
+              ],
+              "standby": []
+            },
+            "direct": {
+              "state": "up"
+            }
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "uplinks": [
+            {
+              "interface": "enP3p49s0",
+              "kind": "ethernet",
+              "operState": "down",
+              "ipv4": [],
+              "sourceRouted": false,
+              "bonding": [],
+              "carrier": false
+            },
+            {
+              "interface": "enP4p65s0",
+              "kind": "ethernet",
+              "operState": "up",
+              "ipv4": [
+                "192.168.5.31/24"
+              ],
+              "sourceRouted": true,
+              "bonding": [
+                {
+                  "output": "bond",
+                  "state": "bonded"
+                }
+              ],
+              "carrier": true,
+              "defaultRouteMetric": 100,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [
+                  "wlP2p33s0"
+                ],
+                "checkedAt": "2026-11-23T16:12:00Z"
+              }
+            },
+            {
+              "interface": "usb0",
+              "kind": "ethernet",
+              "operState": "up",
+              "ipv4": [
+                "172.20.10.2/28"
+              ],
+              "sourceRouted": true,
+              "bonding": [
+                {
+                  "output": "bond",
+                  "state": "bonded"
+                }
+              ],
+              "carrier": true,
+              "defaultRouteMetric": 700,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [],
+                "checkedAt": "2026-11-23T15:00:00Z",
+                "error": "timeout",
+                "failedAt": "2026-11-23T16:13:00Z"
+              }
+            },
+            {
+              "interface": "wlP2p33s0",
+              "kind": "wifi",
+              "operState": "up",
+              "ipv4": [
+                "192.168.5.12/24"
+              ],
+              "sourceRouted": true,
+              "bonding": [
+                {
+                  "output": "bond",
+                  "state": "standby",
+                  "sharesPublicAddressWith": "enP4p65s0"
+                }
+              ],
+              "carrier": true,
+              "defaultRouteMetric": 600,
+              "wifi": {
+                "ssid": "Bench",
+                "signalDbm": -38,
+                "frequencyMhz": 5240
+              },
+              "publicIpv4": {
+                "sharesPublicAddressWith": [
+                  "enP4p65s0"
+                ],
+                "checkedAt": "2026-11-23T16:12:05Z"
+              }
+            },
+            {
+              "interface": "wwan0",
+              "kind": "cellular",
+              "operState": "up",
+              "ipv4": [
+                "10.64.12.9/30"
+              ],
+              "sourceRouted": true,
+              "bonding": [
+                {
+                  "output": "bond",
+                  "state": "bonded"
+                }
+              ],
+              "defaultRouteMetric": 800,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [],
+                "checkedAt": "2026-11-23T16:12:10Z"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "get-uplinks-no-stream",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/uplinks"
+      },
+      "reported": {
+        "net": {
+          "truncated": false,
+          "interfaces": {
+            "enP3p49s0": {
+              "kind": "ethernet",
+              "oper_state": "down",
+              "carrier": false,
+              "ipv4": [],
+              "default_routes": [],
+              "source_route": null,
+              "public_ipv4": null
+            },
+            "enP4p65s0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.31/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv6",
+                  "gateway": "fe80::1",
+                  "metric": 50
+                },
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 100
+                }
+              ],
+              "source_route": {
+                "table": 10003,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:00Z"
+              }
+            },
+            "wlP2p33s0": {
+              "kind": "wifi",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.12/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 600
+                }
+              ],
+              "source_route": {
+                "table": 10004,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:05Z"
+              },
+              "wifi": {
+                "ssid": "Bench",
+                "signal_dbm": -38,
+                "frequency_mhz": 5240,
+                "bssid": "02:00:00:00:00:01"
+              }
+            },
+            "usb0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "172.20.10.2/28"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "172.20.10.1",
+                  "metric": 700
+                }
+              ],
+              "source_route": {
+                "table": 10005,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T15:00:00Z",
+                "error": "timeout",
+                "failed_at": "2026-11-23T16:13:00Z"
+              }
+            },
+            "wwan0": {
+              "kind": "cellular",
+              "oper_state": "up",
+              "ipv4": [
+                "10.64.12.9/30"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "10.64.12.10",
+                  "metric": 800
+                }
+              ],
+              "source_route": {
+                "table": 10006,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "198.51.100.9",
+                "checked_at": "2026-11-23T16:12:10Z"
+              }
+            },
+            "odd": "not an object"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "uplinks": [
+            {
+              "interface": "enP3p49s0",
+              "kind": "ethernet",
+              "operState": "down",
+              "ipv4": [],
+              "sourceRouted": false,
+              "bonding": [],
+              "carrier": false
+            },
+            {
+              "interface": "enP4p65s0",
+              "kind": "ethernet",
+              "operState": "up",
+              "ipv4": [
+                "192.168.5.31/24"
+              ],
+              "sourceRouted": true,
+              "bonding": [],
+              "carrier": true,
+              "defaultRouteMetric": 100,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [
+                  "wlP2p33s0"
+                ],
+                "checkedAt": "2026-11-23T16:12:00Z"
+              }
+            },
+            {
+              "interface": "usb0",
+              "kind": "ethernet",
+              "operState": "up",
+              "ipv4": [
+                "172.20.10.2/28"
+              ],
+              "sourceRouted": true,
+              "bonding": [],
+              "carrier": true,
+              "defaultRouteMetric": 700,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [],
+                "checkedAt": "2026-11-23T15:00:00Z",
+                "error": "timeout",
+                "failedAt": "2026-11-23T16:13:00Z"
+              }
+            },
+            {
+              "interface": "wlP2p33s0",
+              "kind": "wifi",
+              "operState": "up",
+              "ipv4": [
+                "192.168.5.12/24"
+              ],
+              "sourceRouted": true,
+              "bonding": [],
+              "carrier": true,
+              "defaultRouteMetric": 600,
+              "wifi": {
+                "ssid": "Bench",
+                "signalDbm": -38,
+                "frequencyMhz": 5240
+              },
+              "publicIpv4": {
+                "sharesPublicAddressWith": [
+                  "enP4p65s0"
+                ],
+                "checkedAt": "2026-11-23T16:12:05Z"
+              }
+            },
+            {
+              "interface": "wwan0",
+              "kind": "cellular",
+              "operState": "up",
+              "ipv4": [
+                "10.64.12.9/30"
+              ],
+              "sourceRouted": true,
+              "bonding": [],
+              "defaultRouteMetric": 800,
+              "publicIpv4": {
+                "sharesPublicAddressWith": [],
+                "checkedAt": "2026-11-23T16:12:10Z"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "get-location-fix",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/location"
+      },
+      "reported": {
+        "gps": {
+          "gpsd": "connected",
+          "receivers": [
+            {
+              "path": "/dev/ttyACM0",
+              "driver": "NMEA0183",
+              "bps": 9600,
+              "usb_port": "3-1.2"
+            },
+            {
+              "path": "/dev/ttyUSB9"
+            },
+            {
+              "driver": "no path, so left out"
+            }
+          ],
+          "fix": {
+            "mode": "3d",
+            "time": "2026-11-22T20:15:30.000Z",
+            "lat": 12.345678,
+            "lon": -98.765432,
+            "alt_msl_m": 41.5,
+            "speed_mps": 0.12,
+            "track_deg": 270.0,
+            "climb_mps": -0.01,
+            "eph_m": 4.2,
+            "epv_m": 7.9
+          },
+          "satellites": {
+            "used": 9,
+            "visible": 14,
+            "hdop": 0.9,
+            "pdop": 1.6
+          },
+          "since": "2026-11-22T20:10:02.000Z",
+          "device": {
+            "path": "/dev/serial/by-id/usb-Microchip_MCP2221-if01",
+            "added": true
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "gpsd": "connected",
+          "receivers": [
+            {
+              "path": "/dev/ttyACM0",
+              "driver": "NMEA0183",
+              "bps": 9600,
+              "usbPort": "3-1.2"
+            },
+            {
+              "path": "/dev/ttyUSB9"
+            }
+          ],
+          "fix": {
+            "mode": "3d",
+            "time": "2026-11-22T20:15:30Z",
+            "latitude": 12.345678,
+            "longitude": -98.765432,
+            "altitudeM": 41.5,
+            "speedMps": 0.12,
+            "trackDeg": 270,
+            "climbMps": -0.01,
+            "horizontalErrorM": 4.2,
+            "verticalErrorM": 7.9
+          },
+          "since": "2026-11-22T20:10:02Z",
+          "satellites": {
+            "used": 9,
+            "visible": 14,
+            "hdop": 0.9,
+            "pdop": 1.6
+          },
+          "configuredReceiver": {
+            "path": "/dev/serial/by-id/usb-Microchip_MCP2221-if01",
+            "added": true
+          }
+        }
+      }
+    },
+    {
+      "name": "get-location-lost",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/location"
+      },
+      "reported": {
+        "gps": {
+          "gpsd": "connected",
+          "receivers": [],
+          "fix": {
+            "mode": "none",
+            "lat": 1.0,
+            "lon": 2.0
+          },
+          "last_fix": {
+            "mode": "2d",
+            "time": "2026-11-22T19:00:00.000Z",
+            "lat": 12.3,
+            "lon": -98.7
+          },
+          "satellites": {},
+          "since": "2026-11-22T19:00:05.000Z",
+          "device": {
+            "path": "/dev/ttyACM0",
+            "added": false,
+            "error": "gpsd: ERROR"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "gpsd": "connected",
+          "receivers": [],
+          "fix": {
+            "mode": "none"
+          },
+          "since": "2026-11-22T19:00:05Z",
+          "lastFix": {
+            "mode": "2d",
+            "time": "2026-11-22T19:00:00Z",
+            "latitude": 12.3,
+            "longitude": -98.7
+          },
+          "configuredReceiver": {
+            "path": "/dev/ttyACM0",
+            "added": false,
+            "error": "gpsd: ERROR"
+          }
+        }
+      }
+    },
+    {
+      "name": "get-location-no-shadow",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/location"
+      },
+      "reported": {},
+      "response": {
+        "status": 409,
+        "errorType": "DeviceStateUnavailable"
+      }
+    },
+    {
+      "name": "list-wifi",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/wifi/networks"
+      },
+      "reported": {
+        "net": {
+          "wifi": {
+            "networks": [
+              {
+                "ssid": "Home",
+                "security": "personal",
+                "hidden": false
+              },
+              {
+                "ssid": "Cafe",
+                "security": "open",
+                "hidden": true
+              },
+              {
+                "ssid": "Odd",
+                "security": "enterprise"
+              },
+              {
+                "security": "open"
+              }
+            ]
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "networks": [
+            {
+              "ssid": "Home",
+              "security": "personal",
+              "hidden": false
+            },
+            {
+              "ssid": "Cafe",
+              "security": "open",
+              "hidden": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "list-wifi-no-wifi",
+      "request": {
+        "method": "GET",
+        "path": "/v1/control/devices/{deviceId}/wifi/networks"
+      },
+      "reported": {
+        "net": {
+          "truncated": false,
+          "interfaces": {
+            "enP3p49s0": {
+              "kind": "ethernet",
+              "oper_state": "down",
+              "carrier": false,
+              "ipv4": [],
+              "default_routes": [],
+              "source_route": null,
+              "public_ipv4": null
+            },
+            "enP4p65s0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.31/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv6",
+                  "gateway": "fe80::1",
+                  "metric": 50
+                },
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 100
+                }
+              ],
+              "source_route": {
+                "table": 10003,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:00Z"
+              }
+            },
+            "wlP2p33s0": {
+              "kind": "wifi",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "192.168.5.12/24"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "192.168.5.1",
+                  "metric": 600
+                }
+              ],
+              "source_route": {
+                "table": 10004,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T16:12:05Z"
+              },
+              "wifi": {
+                "ssid": "Bench",
+                "signal_dbm": -38,
+                "frequency_mhz": 5240,
+                "bssid": "02:00:00:00:00:01"
+              }
+            },
+            "usb0": {
+              "kind": "ethernet",
+              "oper_state": "up",
+              "carrier": true,
+              "ipv4": [
+                "172.20.10.2/28"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "172.20.10.1",
+                  "metric": 700
+                }
+              ],
+              "source_route": {
+                "table": 10005,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "203.0.113.7",
+                "checked_at": "2026-11-23T15:00:00Z",
+                "error": "timeout",
+                "failed_at": "2026-11-23T16:13:00Z"
+              }
+            },
+            "wwan0": {
+              "kind": "cellular",
+              "oper_state": "up",
+              "ipv4": [
+                "10.64.12.9/30"
+              ],
+              "default_routes": [
+                {
+                  "family": "ipv4",
+                  "gateway": "10.64.12.10",
+                  "metric": 800
+                }
+              ],
+              "source_route": {
+                "table": 10006,
+                "rule": true
+              },
+              "public_ipv4": {
+                "address": "198.51.100.9",
+                "checked_at": "2026-11-23T16:12:10Z"
+              }
+            },
+            "odd": "not an object"
+          }
+        }
+      },
+      "response": {
+        "status": 409,
+        "errorType": "DeviceStateUnavailable"
+      }
+    }
+  ]
+}

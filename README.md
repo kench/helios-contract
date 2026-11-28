@@ -35,10 +35,13 @@ smithy-build.json    build config: OpenAPI 3.1 output for each service
 test-vectors/
   challenge-v1.json  challenge message, digest and signature vectors (TEST KEY ONLY)
   stream-commands-v1.json  valid and invalid arguments of the stream commands
+  display-commands-v1.json valid and invalid arguments of the display commands
+  control-reports-v1.json  a device's reports in, the Control API's read responses out
 scripts/
   generate_challenge_vectors.py   regenerates challenge-v1.json
   check_command_vectors.py        checks the command vectors against a reference reading of the model
   check_challenge_vectors.py      checks the vector files (run in CI)
+  check_report_vectors.py         checks the report vectors against the built Control API OpenAPI
   requirements.txt                Python dependencies for both scripts
 .github/workflows/ci.yml          CI and releases
 ```
@@ -97,7 +100,17 @@ AWS ones. In practice that means:
 smithy build        # needs the Smithy CLI (1.75.0); Maven dependencies come from smithy-build.json
 python3 scripts/check_challenge_vectors.py test-vectors/challenge-*.json   # needs `cryptography`
 python3 scripts/check_command_vectors.py test-vectors/*-commands-v*.json
+python3 scripts/check_report_vectors.py \
+  build/smithy/control-api/openapi/HeliosControl.openapi.json test-vectors/control-reports-v*.json
 ```
+
+`test-vectors/control-reports-v1.json` pins how a device's reports become Control API read
+responses: each case is the `reported` section of the device's named shadows, a read request
+and the response (status, error type, and for a 200 the body). They were recorded from
+helios-cloud's Control API, with nothing kept in the cloud's settings. Both sides that serve the
+API must answer them alike: helios-cloud from the shadows, and Helios's on-device console (LLD 13)
+from the modules' own reports. Error messages and fields from the shadow's metadata
+(`reportedAt`) aren't compared.
 
 The Smithy CLI version is pinned in `.github/workflows/ci.yml` (`SMITHY_VERSION`) and must match
 the dependency versions in `smithy-build.json`. Bump them together.
@@ -150,7 +163,8 @@ python3 scripts/generate_challenge_vectors.py > test-vectors/challenge-v1.json
 
 - **Smithy build:** installs the pinned Smithy CLI (checking its published SHA-256), runs
   `smithy build`, which fails on any validation error, and uploads the OpenAPI files as the
-  `openapi` artifact.
+  `openapi` artifact. It also runs `check_report_vectors.py`, so every recorded response fits
+  the API the model generates.
 - **Challenge test vectors:** runs `check_challenge_vectors.py` on the challenge vectors and
   `check_command_vectors.py` on the command vectors.
 - **Release:** pushing a tag `vX.Y.Z` (once both jobs pass) creates a GitHub release with the
